@@ -2,13 +2,16 @@
 module.exports = function(app) {
   var con = require('../controllers/projectController');
 
+  //GET
+  app.route('/item/:id').get(con.item);
+
+  //POST
   app.route('/adduser').post(con.add_user);
   app.route('/login').post(con.login);
   app.route('/logout').post(con.logout);
   app.route('/verify').post(con.verify);
   app.route('/additem').post(con.additem);
   app.route('/search').post(con.search);
-  app.route('/item/:id').get(con.item);
 
   //DEBUGGING
   app.route('/list_all_users').post(con.list_all_users);
