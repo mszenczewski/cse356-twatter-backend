@@ -1,6 +1,7 @@
 'use strict';
 
 var nodemailer = require('nodemailer');
+const path = require("path");
 
 var mongoose = require('mongoose'),
   User = mongoose.model('Users'),
@@ -37,13 +38,14 @@ exports.add_user = function(req, res) {
     if (error) {
       console.log(error);
     } else {
-      console.log('email sent: ' + mail_options.to + ' ' + info.response);
+      let tmp = info.response.split(' ');
+      let code = tmp[2];
+      console.log('email sent: ' + mail_options.to + ' [' + code + ']');
     }
   });
 
   new_user.save(function(err, user) {
     if (err) res.send(err);
-    transporter.sendMail(mail_options);
     res.json({status:"OK"});
   });
 };
@@ -175,8 +177,6 @@ exports.item = function(req, res) {
 /* {timestamp:, limit: } 
 /***********************/
 exports.search = function(req, res) {
-  console.log('search query: ' + req.body.timestamp + ' ' + req.body.limit);
-
   let timestamp = req.body.timestamp;
 
   if (!req.body.timestamp) {
@@ -194,7 +194,7 @@ exports.search = function(req, res) {
     limit = 100;
   }
 
-  console.log('search options: ' + timestamp + ' ' + limit);
+  console.log('search query: ' + req.body.timestamp + ' ' + req.body.limit + ', using: ' + timestamp + ' ' + limit);
 
   Item.find({timestamp: {$lte: timestamp}}, 
     function(err, results) {
