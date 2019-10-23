@@ -1,7 +1,6 @@
 'use strict';
 
 var nodemailer = require('nodemailer');
-const path = require("path");
 
 var mongoose = require('mongoose'),
   User = mongoose.model('Users'),
