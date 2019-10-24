@@ -3,12 +3,13 @@ var express = require('express'),
   port = process.env.PORT || 8080;
   mongoose = require('mongoose'),
   session = require('client-sessions');
-  User = require('./api/models/projectModel'), //created model loading here
+  User = require('./api/models/user'), //created model loading here
+  Item = require('./api/models/item'), //created model loading here
   bodyParser = require('body-parser');
 
 // mongoose instance connection url connection
 mongoose.Promise = global.Promise;
-mongoose.connect('mongodb://localhost/projectdb', {useNewUrlParser: true, useUnifiedTopology: true}); 
+mongoose.connect('mongodb://localhost/twatterdb', {useNewUrlParser: true, useUnifiedTopology: true}); 
 mongoose.set('useFindAndModify', false);
 
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -23,7 +24,7 @@ app.use(session({
   activeDuration: 5 * 60 * 1000,
 }));
 
-var routes = require('./api/routes/projectRoutes'); //importing route
+var routes = require('./api/routes/routes'); //importing route
 routes(app); //register the route
 
 app.listen(port);
