@@ -1,6 +1,5 @@
 var express = require('express'),
   app = express(),
-  port = process.env.PORT || 8080;
   mongoose = require('mongoose'),
   session = require('client-sessions');
   User = require('./api/models/user'), //created model loading here
@@ -27,4 +26,4 @@ app.use(session({
 var routes = require('./api/routes/routes'); //importing route
 routes(app); //register the route
 
-app.listen(port);
+app.listen(8080);

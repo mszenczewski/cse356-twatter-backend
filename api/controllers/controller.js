@@ -1,10 +1,15 @@
 'use strict';
 
 var nodemailer = require('nodemailer');
+const path = require("path");
 
 var mongoose = require('mongoose'),
   User = mongoose.model('Users'),
   Item = mongoose.model('Items');
+
+exports.home = function(req, res) {
+  res.redirect('home');
+}
 
 /***********************/
 /* ADD USER 

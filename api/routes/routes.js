@@ -4,6 +4,7 @@ module.exports = function(app) {
 
   //GET
   app.route('/item/:id').get(con.item);
+  app.route('/').get(con.home);
 
   //POST
   app.route('/adduser').post(con.add_user);
