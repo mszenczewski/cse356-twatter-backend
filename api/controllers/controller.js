@@ -11,11 +11,12 @@ exports.home = function(req, res) {
   res.redirect('home');
 }
 
+const log_padding = 8;
 const log = {
-  OK: '<OK>'.padEnd(8),
-  ERROR: '<ERROR>'.padEnd(8),
-  WARN: '<WARN>'.padEnd(8),
-  INFO: '<INFO>'.padEnd(8),
+  OK: '<OK>'.padEnd(log_padding),
+  ERROR: '<ERROR>'.padEnd(log_padding),
+  WARN: '<WARN>'.padEnd(log_padding),
+  INFO: '<INFO>'.padEnd(log_padding),
 }
 
 /***********************/
