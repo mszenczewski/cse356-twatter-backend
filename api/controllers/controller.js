@@ -16,8 +16,6 @@ exports.home = function(req, res) {
 /* { username:, password:, email: }
 /***********************/
 exports.add_user = function(req, res) {
-  console.log('ADD USER: ' + JSON.stringify(req.body, null, 2));
-
   let key = Math.floor(Math.random() * Math.floor(100000));
   req.body.key = key;
   var new_user = new User(req.body);
@@ -39,19 +37,26 @@ exports.add_user = function(req, res) {
     }
   });
 
-  transporter.sendMail(mail_options, function(error, info){
-    if (error) {
-      console.log(error);
+  transporter.sendMail(mail_options, function(err, info){
+    if (err) {
+      console.log('<ERROR> ADD USER: ' + err);
+      res.json({status:"error", error: err});
+      return;
     } else {
       let tmp = info.response.split(' ');
       let code = tmp[2];
-      console.log('email sent: ' + mail_options.to + ' [' + code + ']');
+      console.log('ADD USER: email sent to ' + mail_options.to + ' [' + code + ']');
     }
   });
 
   new_user.save(function(err, user) {
-    if (err) res.send(err);
-    res.json({status:"OK"});
+    if (err) {
+      console.log('<ERROR> ADD USER: ' + err);
+      res.json({status:"error", error: err});
+    } else {
+      console.log('ADD USER: added ' + user.username + ' to database');
+      res.json({status:"OK"});
+    }
   });
 };
 
