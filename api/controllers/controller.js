@@ -16,6 +16,7 @@ exports.home = function(req, res) {
 /* { username:, password:, email: }
 /***********************/
 exports.add_user = function(req, res) {
+  console.log('ADD USER: ' + JSON.stringify(req.body, null, 2));
 
   let key = Math.floor(Math.random() * Math.floor(100000));
   req.body.key = key;
