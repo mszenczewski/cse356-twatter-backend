@@ -20,7 +20,7 @@ const log = {
 }
 
 /***********************/
-/* ADD USER 
+/* ADDUSER 
 /* { username:, password:, email: }
 /***********************/
 exports.add_user = function(req, res) {
@@ -47,7 +47,7 @@ exports.add_user = function(req, res) {
 
   transporter.sendMail(mail_options, function(err, info){
     if (err) {
-      console.log(log.ERROR + 'ADD USER: ' + err);
+      console.log(log.ERROR + 'ADDUSER: ' + err);
       res.json({status:"error", error: 'fatal'});
       return;
     }
@@ -56,21 +56,21 @@ exports.add_user = function(req, res) {
 
     if (code != 'OK' )
     {
-      console.log(log.ERROR + 'ADD USER: ' + JSON.stringify(info, null, 2));
+      console.log(log.ERROR + 'ADDUSER: ' + JSON.stringify(info, null, 2));
       res.json({status:"error", error: 'fatal'});
       return;
     }
 
-    console.log(log.OK + 'ADD USER: email sent to ' + mail_options.to + ' [' + code + ']');
+    console.log(log.OK + ' email sent to ' + mail_options.to);
   });
 
   new_user.save(function(err, user) {
     if (err) {
-      console.log(log.ERROR + 'ADD USER: ' + err);
+      console.log(log.ERROR + 'ADDUSER: ' + err);
       res.json({status:"error", error: 'fatal'});
       return;
     }
-    console.log(log.OK + 'ADD USER: added ' + user.username + ' to database');
+    console.log(log.OK + 'ADDUSER: added ' + user.username + ' to database');
     res.json({status:"OK"});
   });
 };
@@ -175,8 +175,15 @@ exports.verify = function(req, res) {
 /* {content:, childType: } 
 /***********************/
 exports.additem = function(req, res) {
-  if (!req.session || !req.session.user || !req.body.content) { 
-    res.json({status: "error"});
+  if (!req.session || !req.session.user) {
+    console.log(log.WARN + 'ADDITEM: user not logged in');
+    res.json({status: "error", error:'user not logged in'});
+    return;
+  }
+
+  if (!req.body.content) { 
+    console.log(log.WARN + 'ADDITEM: no content');
+    res.json({status: "error", error:'no content'});
     return;
   }
 
@@ -193,8 +200,13 @@ exports.additem = function(req, res) {
   var new_item = new Item(req.body);
 
   new_item.save(function(err, item) {
-    if (err) console.log("additem: " + err);
-    console.log("item added: " + item.id);
+    if (err) {
+      console.log(log.ERROR + 'ADDITEM: ' + err);
+      res.json({status: "error", error:'fatal'});
+      return;
+    }
+
+    console.log(log.OK + 'ADDITEM: ' + item.id + 'added');
     res.json({status:'OK', id: item.id});
   });
 };
@@ -267,9 +279,14 @@ exports.search = function(req, res) {
 
 /***********************/
 /* LOGOUT
-/* {content:, childType: } 
 /***********************/
 exports.logout = function(req, res) {
+  if (!req.session || !req.session.user) {
+    console.log(log.WARN + 'LOGOUT: user not logged in');
+    res.json({status: "error", error:'user not logged in'});
+    return;
+  }
+  console.log(log.OK + 'LOGOUT: ' + req.session.user + ' logged out');
   req.session.reset();
   res.json({status:"OK"});
 };
