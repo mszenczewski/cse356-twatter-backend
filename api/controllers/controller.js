@@ -215,28 +215,35 @@ exports.additem = function(req, res) {
 /* ITEM
 /***********************/
 exports.item = function(req, res) {
-  console.log('id requested: ' + req.params.id);
   Item.findOne(
     { 'id': req.params.id},
     function(err, item) {
-      if (err) console.log('item: ' + err);
-      if (item === null) {
-        res.json({status: "error"});
+      if (err) {
+        console.log(log.ERROR + 'ITEM: ' + err);
+        res.json({status: "error", error:'fatal'});
         return;
-      } else {
-        let json = {
-          status: 'OK', 
-          item: {
-            content: item.content,
-            id: item.id,
-            username: item.username,
-            property: item.property,
-            retweeted: item.retweeted,
-            timestamp: item.timestamp,
-            }
-          };
-        res.send(json);
       }
+
+      if (item === null) {
+        console.log(log.WARN + 'ITEM: item not found');
+        res.json({status: "error", error:'item not found'});
+        return;
+      }
+
+      let json = {
+        status: 'OK', 
+        item: {
+          content: item.content,
+          id: item.id,
+          username: item.username,
+          property: item.property,
+          retweeted: item.retweeted,
+          timestamp: item.timestamp,
+          }
+      };
+
+      console.log(log.OK + 'ITEM: ' + item.id +' found');
+      res.send(json);
     });
 };
 
@@ -262,19 +269,23 @@ exports.search = function(req, res) {
     limit = 100;
   }
 
-  console.log('search query: ' + req.body.timestamp + ' ' + req.body.limit + ', using: ' + timestamp + ' ' + limit);
+  console.log(log.OK + 'SEARCH: query: ' + timestamp + ', ' + limit);
 
   Item.find({timestamp: {$lte: timestamp}}, 
     function(err, results) {
-      if (err) console.log('search err: ' + err);
+      if (err) {
+        console.log(log.ERROR + 'SEARCH: ' + err);
+        res.json({status: "error", error:'fatal'});
+      }
 
       let json = {
         status:'OK',
         items: results,
       };
-    
+
+      console.log(log.OK + 'SEARCH: ' + json.items.length + ' results sent');
       res.send(json);
-    }).limit(limit);
+    }).limit(parseInt(limit));
 };
 
 /***********************/
@@ -325,10 +336,10 @@ exports.list_all_items = function(req, res) {
 exports.remove_all_users = function(req, res) {
   User.deleteMany({}, function(err, user) {
     if (err) {
-      console.log('remove_all_users: ' + err);
+      console.log(log.ERROR + 'REMOVE_ALL_USERS: ' + err);
       res.json({status:'error'});
     } else {
-      console.log('all users removed');
+      console.log(log.INFO + 'ALL USERS REMOVED');
       res.json({status:'OK'});
     }  
   });
@@ -344,7 +355,7 @@ exports.remove_all_items = function(req, res) {
       res.json({status:'error', error: 'fatal'});
       return;
     }
-    console.log(log.OK + 'REMOVE_ALL_ITEMS: all items removed');
+    console.log(log.INFO + 'ALL ITEMS REMOVED');
     res.json({status:'OK'});
   });
 };
