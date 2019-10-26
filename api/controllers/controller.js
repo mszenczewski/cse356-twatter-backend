@@ -98,6 +98,18 @@ exports.add_user = function(req, res) {
 /* { username:, password: }
 /***********************/
 exports.login = function(req, res) {
+  if (req.body.username === '') {
+    console.log(log.WARN + 'LOGIN:  no username entered');
+    res.json({status:"error", error: 'no username entered'});
+    return;
+  }
+
+  if (req.body.password === '') {
+    console.log(log.WARN + 'LOGIN:  no password entered');
+    res.json({status:"error", error: 'no password entered'});
+    return;
+  }
+
   User.findOne(
     { 'username': req.body.username, 
       'password': req.body.password},
