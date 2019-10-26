@@ -205,7 +205,7 @@ exports.additem = function(req, res) {
       return;
     }
 
-    console.log(log.OK + 'ADDITEM: ' + item.id + 'added');
+    console.log(log.OK + 'ADDITEM: item ' + item.id + ' added');
     res.json({status:'OK', id: item.id});
   });
 };
@@ -260,7 +260,7 @@ exports.search = function(req, res) {
 
   let limit = 25;
 
-  if (req.body.limit != null) {
+  if (req.body.limit !== null && !isNaN(parseInt(req.body.limit))) {
     limit = req.body.limit;
   }
 
