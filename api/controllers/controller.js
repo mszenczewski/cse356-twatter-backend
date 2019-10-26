@@ -27,6 +27,25 @@ exports.add_user = function(req, res) {
   req.body.key = key;
   var new_user = new User(req.body);
 
+  if (req.body.username === '') {
+    console.log(log.WARN + 'ADDUSER:  Application rejected, no username entered');
+    res.json({status:"error", error: 'no username entered'});
+    return;
+  }
+
+  if (req.body.password === '') {
+    console.log(log.WARN + 'ADDUSER:  Application rejected, no password entered');
+    res.json({status:"error", error: 'no password entered'});
+    return;
+  }
+
+  if (req.body.email === '') {
+    console.log(log.WARN + 'ADDUSER:  Application rejected, no email entered');
+    res.json({status:"error", error: 'no email entered'});
+    return;
+  }
+
+
   var mail_options = {
     from: 'cse356szen@gmail.com',
     to: req.body.email,
