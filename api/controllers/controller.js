@@ -60,7 +60,7 @@ exports.add_user = function(req, res) {
       return;
     }
 
-    console.log(log.OK + ' email sent to ' + mail_options.to);
+    console.log(log.OK + 'ADDUSER: email sent to ' + mail_options.to);
   });
 
   new_user.save(function(err, user) {
