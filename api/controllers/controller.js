@@ -131,6 +131,18 @@ exports.login = function(req, res) {
 /* { email:, key: }
 /***********************/
 exports.verify = function(req, res) {
+  if (req.body.email === '') {
+    console.log(log.WARN + 'VERIFY:  no email entered');
+    res.json({status:"error", error: 'no email entered'});
+    return;
+  }
+
+  if (req.body.key === '') {
+    console.log(log.WARN + 'VERIFY:  no key entered');
+    res.json({status:"error", error: 'no key entered'});
+    return;
+  }
+
   if (req.body.key === "abracadabra") {
     console.log(log.OK + 'VERIFY: abracadabra recieved');
     User.findOneAndUpdate(
