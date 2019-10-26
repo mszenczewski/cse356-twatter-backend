@@ -1,20 +1,17 @@
-var express = require('express'),
-  app = express(),
-  mongoose = require('mongoose'),
+var express = require('express');
+  app = express();
+  mongoose = require('mongoose');
   session = require('client-sessions');
-  User = require('./api/models/user'), //created model loading here
-  Item = require('./api/models/item'), //created model loading here
+  User = require('./api/models/user');
+  Item = require('./api/models/item');
   bodyParser = require('body-parser');
 
-// mongoose instance connection url connection
 mongoose.Promise = global.Promise;
 mongoose.connect('mongodb://localhost/twatterdb', {useNewUrlParser: true, useUnifiedTopology: true}); 
 mongoose.set('useFindAndModify', false);
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-
-console.clear();
 
 app.use(session({
   cookieName: 'session',
