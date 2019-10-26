@@ -7,7 +7,7 @@ var mongoose = require('mongoose'),
   Item = mongoose.model('Items');
 
 exports.home = function(req, res) {
-  res.redirect('home');
+  res.redirect('twatter');
 }
 
 const log_padding = 8;
