@@ -49,14 +49,8 @@ const logger = createLogger({
  * Redirects the / GET request to the React server URL
  */
 exports.home = function(req, res) {
+  logger.DEBUG('[HOME] recieved: ' + JSON.stringify(req.body));
   res.redirect('twatter');
-}
-
-function functionName(fun) {
-  var ret = fun.toString();
-  ret = ret.substr('function '.length);
-  ret = ret.substr(0, ret.indexOf('('));
-  return ret;
 }
 
 /**
@@ -64,7 +58,9 @@ function functionName(fun) {
  * Adds user to database
  * JSON: { username:, password:, email: }
  */
-exports.adduser = function(req, res) {  
+exports.adduser = function(req, res) { 
+  logger.DEBUG('[ADDUSER] recieved: ' + JSON.stringify(req.body));
+ 
   let key = Math.floor(Math.random() * Math.floor(100000));
   req.body.key = key;
   var new_user = new User(req.body);
@@ -86,7 +82,6 @@ exports.adduser = function(req, res) {
     res.json({status:"error", error: 'no email entered'});
     return;
   }
-
 
   var mail_options = {
     from: 'cse356szen@gmail.com',
@@ -119,7 +114,7 @@ exports.adduser = function(req, res) {
       res.json({status:"error", error: 'fatal'});
       return;
     }
-    logger.DEBUG('[ADDUSER] email sent to ' + mail_options.to);
+    logger.INFO('[ADDUSER] email sent to ' + mail_options.to);
   });
 
   new_user.save(function(err, user) {
@@ -128,7 +123,7 @@ exports.adduser = function(req, res) {
       res.json({status:"error", error: 'fatal'});
       return;
     }
-    logger.DEBUG('[ADDUSER] added ' + user.username + ' to database');
+    logger.INFO('[ADDUSER] added ' + user.username + ' to database');
     res.json({status:"OK"});
   });
 };
@@ -139,6 +134,8 @@ exports.adduser = function(req, res) {
  * JSON: { username:, password: }
  */
 exports.login = function(req, res) {
+  logger.DEBUG('[LOGIN] recieved: ' + JSON.stringify(req.body));
+
   if (req.body.username === '') {
     logger.WARN('[LOGIN] no username entered');
     res.json({status:"error", error: 'no username entered'});
@@ -172,7 +169,7 @@ exports.login = function(req, res) {
         return;
       }
 
-      logger.DEBUG('[LOGIN] ' + user.username + ' logged in');
+      logger.INFO('[LOGIN] ' + user.username + ' logged in');
       req.session.user = user.username;
       res.json({status: "OK"});
     }
@@ -185,6 +182,8 @@ exports.login = function(req, res) {
  * JSON: { email:, key: }
  */
 exports.verify = function(req, res) {
+  logger.DEBUG('[VERIFY] recieved: ' + JSON.stringify(req.body));
+
   if (req.body.email === '') {
     logger.WARN('[VERIFY] no email entered');
     res.json({status:"error", error: 'no email entered'});
@@ -198,7 +197,7 @@ exports.verify = function(req, res) {
   }
 
   if (req.body.key === "abracadabra") {
-    logger.DEBUG('[VERIFY] abracadabra recieved');
+    logger.INFO('[VERIFY] abracadabra recieved');
     User.findOneAndUpdate(
       {email: req.body.email}, 
       {$set:{verified:true}},
@@ -208,7 +207,7 @@ exports.verify = function(req, res) {
           res.json({status:"error", error: 'fatal'});
           return;
         }
-        logger.DEBUG('[VERIFY] ' + user.email + ' verified');
+        logger.INFO('[VERIFY] ' + user.email + ' verified');
         res.json({status:"OK"});
       }
     );
@@ -245,11 +244,10 @@ exports.verify = function(req, res) {
             res.json({status:"error", error: 'fatal'});
             return;
           }
-          logger.DEBUG('[VERIFY] ' + user.email + ' verified');
+          logger.INFO('[VERIFY] ' + user.email + ' verified');
           res.json({status:"OK"});
         }
       );
-      
     }
   );
 };
@@ -260,6 +258,8 @@ exports.verify = function(req, res) {
  * JSON: {content:, childType: } 
  */
 exports.additem = function(req, res) {
+  logger.DEBUG('[ADDITEM] recieved: ' + JSON.stringify(req.body));
+
   if (!req.session || !req.session.user) {
     logger.WARN('[ADDITEM] user not logged in');
     res.json({status: "error", error:'user not logged in'});
@@ -291,7 +291,7 @@ exports.additem = function(req, res) {
       return;
     }
 
-    logger.DEBUG('[ADDITEM] item ' + item.id + ' added');
+    logger.INFO('[ADDITEM] item ' + item.id + ' added');
     res.json({status:'OK', id: item.id});
   });
 };
@@ -301,6 +301,8 @@ exports.additem = function(req, res) {
  * Retrieves and item based on ID
  */
 exports.item = function(req, res) {
+  logger.DEBUG('[ITEM] recieved: ' + JSON.stringify(req.params));
+
   Item.findOne(
     { 'id': req.params.id},
     function(err, item) {
@@ -328,7 +330,7 @@ exports.item = function(req, res) {
           }
       };
 
-      logger.DEBUG('[ITEM] ' + item.id +' found');
+      logger.INFO('[ITEM] ' + item.id +' found');
       res.send(json);
     });
 };
@@ -339,6 +341,8 @@ exports.item = function(req, res) {
  * JSON: {timestamp:, limit: } 
  */
 exports.search = function(req, res) {
+  logger.DEBUG('[SEARCH] recieved: ' + JSON.stringify(req.body));
+
   let timestamp = req.body.timestamp;
 
   if (!req.body.timestamp) {
@@ -356,7 +360,7 @@ exports.search = function(req, res) {
     limit = 100;
   }
 
-  logger.DEBUG('[SEARCH] query: ' + timestamp + ', ' + limit);
+  logger.INFO('[SEARCH] query: ' + timestamp + ', ' + limit);
 
   Item.find({timestamp: {$lte: timestamp}}, 
     function(err, results) {
@@ -370,7 +374,7 @@ exports.search = function(req, res) {
         items: results,
       };
 
-      logger.DEBUG('[SEARCH] ' + json.items.length + ' results sent');
+      logger.INFO('[SEARCH] ' + json.items.length + ' results sent');
       res.send(json);
     }).limit(parseInt(limit));
 };
@@ -380,12 +384,14 @@ exports.search = function(req, res) {
  * Logs user out
  */
 exports.logout = function(req, res) {
+  logger.DEBUG('[LOGOUT] recieved: ' + JSON.stringify(req.body));
+
   if (!req.session || !req.session.user) {
     logger.WARN('[LOGOUT] user not logged in');
     res.json({status: "error", error:'user not logged in'});
     return;
   }
-  logger.DEBUG('[LOGOUT] ' + req.session.user + ' logged out');
+  logger.INFO('[LOGOUT] ' + req.session.user + ' logged out');
   req.session.reset();
   res.json({status:"OK"});
 };
