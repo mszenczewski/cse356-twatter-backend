@@ -1,10 +1,9 @@
 'use strict';
 
-var nodemailer = require('nodemailer');
-
-var mongoose = require('mongoose'),
-  User = mongoose.model('Users'),
-  Item = mongoose.model('Items');
+const nodemailer = require('nodemailer');
+const mongoose = require('mongoose');
+const User = mongoose.model('Users');
+const Item = mongoose.model('Items');
 
 exports.home = function(req, res) {
   res.redirect('twatter');
