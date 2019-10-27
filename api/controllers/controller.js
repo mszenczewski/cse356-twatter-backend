@@ -133,10 +133,11 @@ exports.adduser = function(req, res) {
   });
 };
 
-/***********************/
-/* LOGIN 
-/* { username:, password: }
-/***********************/
+/** 
+ * LOGIN 
+ * Logs user in
+ * JSON: { username:, password: }
+ */
 exports.login = function(req, res) {
   if (req.body.username === '') {
     logger.WARN('[LOGIN] no username entered');
@@ -178,10 +179,11 @@ exports.login = function(req, res) {
   );
 };
 
-/***********************/
-/* VERIFY USER 
-/* { email:, key: }
-/***********************/
+/**
+ * VERIFY USER 
+ * Verifies email with randomly generated key
+ * JSON: { email:, key: }
+ */
 exports.verify = function(req, res) {
   if (req.body.email === '') {
     logger.WARN('[VERIFY] no email entered');
@@ -252,10 +254,11 @@ exports.verify = function(req, res) {
   );
 };
 
-/***********************/
-/* ADD ITEM
-/* {content:, childType: } 
-/***********************/
+/**
+ * ADD ITEM
+ * Adds a 'tweet' to the database
+ * JSON: {content:, childType: } 
+ */
 exports.additem = function(req, res) {
   if (!req.session || !req.session.user) {
     logger.WARN('[ADDITEM] user not logged in');
@@ -293,9 +296,10 @@ exports.additem = function(req, res) {
   });
 };
 
-/***********************/
-/* ITEM
-/***********************/
+/**
+ * ITEM
+ * Retrieves and item based on ID
+ */
 exports.item = function(req, res) {
   Item.findOne(
     { 'id': req.params.id},
@@ -329,10 +333,11 @@ exports.item = function(req, res) {
     });
 };
 
-/***********************/
-/* SEARCH
-/* {timestamp:, limit: } 
-/***********************/
+/**
+ * SEARCH
+ * Searches the database for 'tweets'
+ * JSON: {timestamp:, limit: } 
+ */
 exports.search = function(req, res) {
   let timestamp = req.body.timestamp;
 
@@ -370,9 +375,10 @@ exports.search = function(req, res) {
     }).limit(parseInt(limit));
 };
 
-/***********************/
-/* LOGOUT
-/***********************/
+/**
+ * LOGOUT
+ * Logs user out
+ */
 exports.logout = function(req, res) {
   if (!req.session || !req.session.user) {
     logger.WARN('[LOGOUT] user not logged in');
@@ -384,9 +390,10 @@ exports.logout = function(req, res) {
   res.json({status:"OK"});
 };
 
-/***********************/
-/* LIST ALL USERS 
-/***********************/
+/**
+ * LIST ALL USERS 
+ * Returns all users in the database
+ */
 exports.listallusers = function(req, res) {
   User.find({}, function(err, users) {
     if (err) {
@@ -398,9 +405,10 @@ exports.listallusers = function(req, res) {
   });
 };
 
-/***********************/
-/* LIST ALL ITEMS 
-/***********************/
+/**
+ * LIST ALL ITEMS 
+ * Returns all 'tweets' in the database
+ */
 exports.listallitems = function(req, res) {
   Item.find({}, function(err, items) {
     if (err) {
@@ -412,9 +420,10 @@ exports.listallitems = function(req, res) {
   });
 };
 
-/***********************/
-/* REMOVE ALL USERS 
-/***********************/
+/**
+ * REMOVE ALL USERS 
+ * Removes all users from database
+ */
 exports.removeallusers = function(req, res) {
   User.deleteMany({}, function(err, user) {
     if (err) {
@@ -427,9 +436,10 @@ exports.removeallusers = function(req, res) {
   });
 };
 
-/***********************/
-/* REMOVE ALL ITEMS 
-/***********************/
+/**
+ * REMOVE ALL ITEMS 
+ * Removes all 'tweets' from database
+ */
 exports.removeallitems = function(req, res) {
   Item.deleteMany({}, function(err, item) {
     if (err) {
