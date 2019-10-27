@@ -7,7 +7,7 @@ module.exports = function(app) {
   app.route('/').get(con.home);
 
   //POST
-  app.route('/adduser').post(con.add_user);
+  app.route('/adduser').post(con.adduser);
   app.route('/login').post(con.login);
   app.route('/logout').post(con.logout);
   app.route('/verify').post(con.verify);
@@ -15,8 +15,8 @@ module.exports = function(app) {
   app.route('/search').post(con.search);
 
   //DEBUGGING
-  app.route('/list_all_users').post(con.list_all_users);
-  app.route('/remove_all_users').post(con.remove_all_users);
-  app.route('/list_all_items').post(con.list_all_items);
-  app.route('/remove_all_items').post(con.remove_all_items);
+  app.route('/listallusers').post(con.listallusers);
+  app.route('/removeallusers').post(con.removeallusers);
+  app.route('/listallitems').post(con.listallitems);
+  app.route('/removeallitems').post(con.removeallitems);
 };

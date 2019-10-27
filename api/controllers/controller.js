@@ -1,45 +1,88 @@
 'use strict';
 
 const nodemailer = require('nodemailer');
+
 const mongoose = require('mongoose');
 const User = mongoose.model('Users');
 const Item = mongoose.model('Items');
 
+const { createLogger, format, transports } = require('winston');
+const filesystem = require('fs');
+const log_dir = 'log';
+require('winston-daily-rotate-file');
+
+if (!filesystem.existsSync(log_dir)) {
+  filesystem.mkdirSync(log_dir);
+}
+
+const daily_rotate_file_transport = new transports.DailyRotateFile
+({
+  filename: `${log_dir}/%DATE%-results.log`,
+  datePattern: 'YYYY-MM-DD'
+});
+
+const logger = createLogger({
+  level: 'DEBUG',
+  levels: { 
+    ERROR: 0,
+    WARN: 1,
+    INFO: 2,
+    DEBUG: 3
+  },
+  format: format.combine(
+    format.timestamp({format: 'YYYY-MM-DD HH:mm:ss'}),
+    format.printf(info => `${info.timestamp} ${info.level}: ${info.message}`)
+  ),
+  transports: [
+    new transports.Console({
+      format: format.combine(
+        format.timestamp({format: 'YYYY-MM-DD HH:mm:ss'}),
+        format.printf(info => `${info.timestamp} ${info.level}: ${info.message}`)
+      ),
+    }),
+    daily_rotate_file_transport
+  ]
+});
+
+/**
+ * HOME
+ * Redirects the / GET request to the React server URL
+ */
 exports.home = function(req, res) {
   res.redirect('twatter');
 }
 
-const log_padding = 8;
-const log = {
-  OK: '<OK>'.padEnd(log_padding),
-  ERROR: '<ERROR>'.padEnd(log_padding),
-  WARN: '<WARN>'.padEnd(log_padding),
-  INFO: '<INFO>'.padEnd(log_padding),
+function functionName(fun) {
+  var ret = fun.toString();
+  ret = ret.substr('function '.length);
+  ret = ret.substr(0, ret.indexOf('('));
+  return ret;
 }
 
-/***********************/
-/* ADDUSER 
-/* { username:, password:, email: }
-/***********************/
-exports.add_user = function(req, res) {
+/**
+ * ADDUSER 
+ * Adds user to database
+ * JSON: { username:, password:, email: }
+ */
+exports.adduser = function(req, res) {  
   let key = Math.floor(Math.random() * Math.floor(100000));
   req.body.key = key;
   var new_user = new User(req.body);
 
   if (req.body.username === '') {
-    console.log(log.WARN + 'ADDUSER:  Application rejected, no username entered');
+    logger.WARN('[ADDUSER] application rejected, no username entered');
     res.json({status:"error", error: 'no username entered'});
     return;
   }
 
   if (req.body.password === '') {
-    console.log(log.WARN + 'ADDUSER:  Application rejected, no password entered');
+    logger.WARN('[ADDUSER] application rejected, no password entered');
     res.json({status:"error", error: 'no password entered'});
     return;
   }
 
   if (req.body.email === '') {
-    console.log(log.WARN + 'ADDUSER:  Application rejected, no email entered');
+    logger.WARN('[ADDUSER] application rejected, no email entered');
     res.json({status:"error", error: 'no email entered'});
     return;
   }
@@ -62,32 +105,30 @@ exports.add_user = function(req, res) {
     }
   });
 
-  transporter.sendMail(mail_options, function(err, info){
+  transporter.sendMail(mail_options, function(err, info) {
     if (err) {
-      console.log(log.ERROR + 'ADDUSER: ' + err);
+      logger.ERROR('[ADDUSER] ' + err);
       res.json({status:"error", error: 'fatal'});
       return;
     }
     let tmp = info.response.split(' ');
     let code = tmp[2];
 
-    if (code != 'OK' )
-    {
-      console.log(log.ERROR + 'ADDUSER: ' + JSON.stringify(info, null, 2));
+    if (code != 'OK' ) {
+      logger.ERROR('[ADDUSER] ' + JSON.stringify(info, null, 2));
       res.json({status:"error", error: 'fatal'});
       return;
     }
-
-    console.log(log.OK + 'ADDUSER: email sent to ' + mail_options.to);
+    logger.DEBUG('[ADDUSER] email sent to ' + mail_options.to);
   });
 
   new_user.save(function(err, user) {
     if (err) {
-      console.log(log.ERROR + 'ADDUSER: ' + err);
+      logger.ERROR('[ADDUSER] ' + err);
       res.json({status:"error", error: 'fatal'});
       return;
     }
-    console.log(log.OK + 'ADDUSER: added ' + user.username + ' to database');
+    logger.DEBUG('[ADDUSER] added ' + user.username + ' to database');
     res.json({status:"OK"});
   });
 };
@@ -98,43 +139,43 @@ exports.add_user = function(req, res) {
 /***********************/
 exports.login = function(req, res) {
   if (req.body.username === '') {
-    console.log(log.WARN + 'LOGIN:  no username entered');
+    logger.WARN('[LOGIN] no username entered');
     res.json({status:"error", error: 'no username entered'});
     return;
   }
 
   if (req.body.password === '') {
-    console.log(log.WARN + 'LOGIN:  no password entered');
+    logger.WARN('[LOGIN] no password entered');
     res.json({status:"error", error: 'no password entered'});
     return;
   }
 
   User.findOne(
-    { 'username': req.body.username, 
-      'password': req.body.password},
+    { 'username': req.body.username, 'password': req.body.password},
     function(err, user) {
       if (err) {
-        console.log(log.ERROR + 'LOGIN:' + err);
+        logger.ERROR('[LOGIN] ' + err);
         res.json({status: "error", error: 'fatal'});
         return;
       }
 
       if (user === null) {
-        console.log(log.WARN + 'LOGIN: could not find user');
+        logger.WARN('[LOGIN] could not find user');
         res.json({status: "error", error: 'incorrect login'});
         return;
       }
 
       if (user.verified != true) {
-        console.log(log.WARN + 'LOGIN: user not verified');
+        logger.WARN('[LOGIN] user not verified');
         res.json({status: "error", error: 'user not verified'});
         return;
       }
 
-      console.log(log.OK + 'LOGIN: ' + user.username + ' logged in');
+      logger.DEBUG('[LOGIN] ' + user.username + ' logged in');
       req.session.user = user.username;
       res.json({status: "OK"});
-    });
+    }
+  );
 };
 
 /***********************/
@@ -143,29 +184,29 @@ exports.login = function(req, res) {
 /***********************/
 exports.verify = function(req, res) {
   if (req.body.email === '') {
-    console.log(log.WARN + 'VERIFY:  no email entered');
+    logger.WARN('[VERIFY] no email entered');
     res.json({status:"error", error: 'no email entered'});
     return;
   }
 
   if (req.body.key === '') {
-    console.log(log.WARN + 'VERIFY:  no key entered');
+    logger.WARN('[VERIFY] no key entered');
     res.json({status:"error", error: 'no key entered'});
     return;
   }
 
   if (req.body.key === "abracadabra") {
-    console.log(log.OK + 'VERIFY: abracadabra recieved');
+    logger.DEBUG('[VERIFY] abracadabra recieved');
     User.findOneAndUpdate(
       {email: req.body.email}, 
       {$set:{verified:true}},
       function(err, user) {
         if (err) {
-          console.log(log.ERROR + 'VERIFY: ' + err);
+          logger.ERROR('[VERIFY] ' + err);
           res.json({status:"error", error: 'fatal'});
           return;
         }
-        console.log(log.OK + 'VERIFY: ' + user.email + ' verified');
+        logger.DEBUG('[VERIFY] ' + user.email + ' verified');
         res.json({status:"OK"});
       }
     );
@@ -176,19 +217,19 @@ exports.verify = function(req, res) {
     {email: req.body.email}, 
     function(err, user) {
       if (err) {
-        console.log(log.ERROR + 'VERIFY: ' + err);
+        logger.ERROR('[VERIFY] ' + err);
         res.json({status:"error", error: 'fatal'});
         return;
       }
 
       if(user === null) {
-        console.log(log.WARN + 'VERIFY: user not found');
+        logger.WARN('[VERIFY] user not found');
         res.json({status:"error", error:"user not found"});
         return;
       }
 
       if(user.key != req.body.key){
-        console.log(log.WARN + 'VERIFY: incorrect key');
+        logger.WARN('[VERIFY] incorrect key');
         res.json({status:"error", error:"incorrect key"});
         return;
       }
@@ -198,11 +239,11 @@ exports.verify = function(req, res) {
         {$set:{verified:true}},
         function(err, user) {
           if(err){
-            console.log(log.ERROR + 'VERIFY: ' + err);
+            logger.ERROR('[VERIFY] ' + err);
             res.json({status:"error", error: 'fatal'});
             return;
           }
-          console.log(log.OK + 'VERIFY: ' + user.email + ' verified');
+          logger.DEBUG('[VERIFY] ' + user.email + ' verified');
           res.json({status:"OK"});
         }
       );
@@ -217,13 +258,13 @@ exports.verify = function(req, res) {
 /***********************/
 exports.additem = function(req, res) {
   if (!req.session || !req.session.user) {
-    console.log(log.WARN + 'ADDITEM: user not logged in');
+    logger.WARN('[ADDITEM] user not logged in');
     res.json({status: "error", error:'user not logged in'});
     return;
   }
 
   if (!req.body.content) { 
-    console.log(log.WARN + 'ADDITEM: no content');
+    logger.WARN('[ADDITEM] no content');
     res.json({status: "error", error:'no content'});
     return;
   }
@@ -242,12 +283,12 @@ exports.additem = function(req, res) {
 
   new_item.save(function(err, item) {
     if (err) {
-      console.log(log.ERROR + 'ADDITEM: ' + err);
+      logger.ERROR('[ADDITEM] ' + err);
       res.json({status: "error", error:'fatal'});
       return;
     }
 
-    console.log(log.OK + 'ADDITEM: item ' + item.id + ' added');
+    logger.DEBUG('[ADDITEM] item ' + item.id + ' added');
     res.json({status:'OK', id: item.id});
   });
 };
@@ -260,13 +301,13 @@ exports.item = function(req, res) {
     { 'id': req.params.id},
     function(err, item) {
       if (err) {
-        console.log(log.ERROR + 'ITEM: ' + err);
+        logger.ERROR('[ITEM] ' + err);
         res.json({status: "error", error:'fatal'});
         return;
       }
 
       if (item === null) {
-        console.log(log.WARN + 'ITEM: item not found');
+        logger.WARN('[ITEM] item not found');
         res.json({status: "error", error:'item not found'});
         return;
       }
@@ -283,7 +324,7 @@ exports.item = function(req, res) {
           }
       };
 
-      console.log(log.OK + 'ITEM: ' + item.id +' found');
+      logger.DEBUG('[ITEM] ' + item.id +' found');
       res.send(json);
     });
 };
@@ -310,12 +351,12 @@ exports.search = function(req, res) {
     limit = 100;
   }
 
-  console.log(log.OK + 'SEARCH: query: ' + timestamp + ', ' + limit);
+  logger.DEBUG('[SEARCH] query: ' + timestamp + ', ' + limit);
 
   Item.find({timestamp: {$lte: timestamp}}, 
     function(err, results) {
       if (err) {
-        console.log(log.ERROR + 'SEARCH: ' + err);
+        logger.ERROR('[SEARCH] ' + err);
         res.json({status: "error", error:'fatal'});
       }
 
@@ -324,7 +365,7 @@ exports.search = function(req, res) {
         items: results,
       };
 
-      console.log(log.OK + 'SEARCH: ' + json.items.length + ' results sent');
+      logger.DEBUG('[SEARCH] ' + json.items.length + ' results sent');
       res.send(json);
     }).limit(parseInt(limit));
 };
@@ -334,11 +375,11 @@ exports.search = function(req, res) {
 /***********************/
 exports.logout = function(req, res) {
   if (!req.session || !req.session.user) {
-    console.log(log.WARN + 'LOGOUT: user not logged in');
+    logger.WARN('[LOGOUT] user not logged in');
     res.json({status: "error", error:'user not logged in'});
     return;
   }
-  console.log(log.OK + 'LOGOUT: ' + req.session.user + ' logged out');
+  logger.DEBUG('[LOGOUT] ' + req.session.user + ' logged out');
   req.session.reset();
   res.json({status:"OK"});
 };
@@ -346,10 +387,10 @@ exports.logout = function(req, res) {
 /***********************/
 /* LIST ALL USERS 
 /***********************/
-exports.list_all_users = function(req, res) {
+exports.listallusers = function(req, res) {
   User.find({}, function(err, users) {
     if (err) {
-      console.log(log.ERROR + 'LIST_ALL_USERS: ' + err);
+      logger.ERROR('[LISTALLUSERS] ' + err);
       res.json({status:'error', error: 'fatal'});
       return;
     }
@@ -360,10 +401,10 @@ exports.list_all_users = function(req, res) {
 /***********************/
 /* LIST ALL ITEMS 
 /***********************/
-exports.list_all_items = function(req, res) {
+exports.listallitems = function(req, res) {
   Item.find({}, function(err, items) {
     if (err) {
-      console.log(log.ERROR + 'LIST_ALL_ITEMS: ' + err);
+      logger.ERROR('[LISTALLITEMS] ' + err);
       res.json({status:'error', error: 'fatal'});
       return;
     }
@@ -374,13 +415,13 @@ exports.list_all_items = function(req, res) {
 /***********************/
 /* REMOVE ALL USERS 
 /***********************/
-exports.remove_all_users = function(req, res) {
+exports.removeallusers = function(req, res) {
   User.deleteMany({}, function(err, user) {
     if (err) {
-      console.log(log.ERROR + 'REMOVE_ALL_USERS: ' + err);
+      logger.ERROR('[REMOVEALLUSERS] ' + err);
       res.json({status:'error'});
     } else {
-      console.log(log.INFO + 'ALL USERS REMOVED');
+      logger.INFO('[REMOVEALLUSERS] all users removed');
       res.json({status:'OK'});
     }  
   });
@@ -389,14 +430,14 @@ exports.remove_all_users = function(req, res) {
 /***********************/
 /* REMOVE ALL ITEMS 
 /***********************/
-exports.remove_all_items = function(req, res) {
+exports.removeallitems = function(req, res) {
   Item.deleteMany({}, function(err, item) {
     if (err) {
-      console.log(log.ERROR + 'REMOVE_ALL_ITEMS: ' + err);
+      logger.ERROR('[REMOVEALLITEMS]: ' + err);
       res.json({status:'error', error: 'fatal'});
       return;
     }
-    console.log(log.INFO + 'ALL ITEMS REMOVED');
+    logger.INFO('[REMOVEALLITEMS] all items removed');
     res.json({status:'OK'});
   });
 };
