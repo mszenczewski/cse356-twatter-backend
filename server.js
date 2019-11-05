@@ -8,7 +8,8 @@ require('./api/models/user');
 require('./api/models/item');
 
 mongoose.Promise = global.Promise;
-mongoose.connect('mongodb://localhost/twatterdb', {useNewUrlParser: true, useUnifiedTopology: true}); 
+const mongo_url = 'mongodb://192.168.122.16:27017/twatterdb';
+mongoose.connect(mongo_url, {useNewUrlParser: true, useUnifiedTopology: true}); 
 
 mongoose.set('useFindAndModify', false);
 mongoose.set('useCreateIndex', true);
