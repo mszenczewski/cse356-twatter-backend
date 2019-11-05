@@ -7,6 +7,7 @@ module.exports = function(app) {
   app.route('/item/:id').get(con.item);
   app.route('/user/:username').get(con.user);
   app.route('/user/:username/posts').get(con.posts);
+  app.route('/user/:username/followers').get(con.followers);
 
   //POST
   app.route('/adduser').post(con.adduser);
