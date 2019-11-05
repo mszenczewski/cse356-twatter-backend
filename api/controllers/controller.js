@@ -49,7 +49,7 @@ const logger = createLogger({
  * Redirects the / GET request to the React server URL
  */
 exports.home = function(req, res) {
-  logger.DEBUG('[HOME] recieved: ' + JSON.stringify(req.body));
+  logger.DEBUG('[HOME] received: ' + JSON.stringify(req.body));
   res.redirect('twatter');
 }
 
@@ -59,72 +59,86 @@ exports.home = function(req, res) {
  * JSON: { username:, password:, email: }
  */
 exports.adduser = function(req, res) { 
-  logger.DEBUG('[ADDUSER] recieved: ' + JSON.stringify(req.body));
+  logger.DEBUG('[ADDUSER] received: ' + JSON.stringify(req.body));
  
-  let key = Math.floor(Math.random() * Math.floor(100000));
-  req.body.key = key;
-  var new_user = new User(req.body);
-
-  if (req.body.username === '') {
-    logger.WARN('[ADDUSER] application rejected, no username entered');
-    res.json({status:"error", error: 'no username entered'});
-    return;
-  }
-
-  if (req.body.password === '') {
-    logger.WARN('[ADDUSER] application rejected, no password entered');
-    res.json({status:"error", error: 'no password entered'});
-    return;
-  }
-
-  if (req.body.email === '') {
-    logger.WARN('[ADDUSER] application rejected, no email entered');
-    res.json({status:"error", error: 'no email entered'});
-    return;
-  }
-
-  var mail_options = {
-    from: 'cse356szen@gmail.com',
-    to: req.body.email,
-    subject: 'verification email',
-    text: 'validation key: <' + key + '>'
-  };
-
-  var transporter = nodemailer.createTransport({
-    host:'smtp.gmail.com',
-    port:465,
-    secure:true,
-    auth: {
-      user: 'cse356szen@gmail.com',
-      pass: 'chopitup'
-    }
-  });
-
-  transporter.sendMail(mail_options, function(err, info) {
+  User.findOne({ 'username': req.body.username}, function(err, user) {
     if (err) {
       logger.ERROR('[ADDUSER] ' + err);
-      res.json({status:"error", error: 'fatal'});
+      res.json({status:'error', error: 'fatal'});
       return;
     }
-    let tmp = info.response.split(' ');
-    let code = tmp[2];
 
-    if (code != 'OK' ) {
-      logger.ERROR('[ADDUSER] ' + JSON.stringify(info, null, 2));
-      res.json({status:"error", error: 'fatal'});
+    if (user != null) {
+      logger.WARN('[ADDUSER] user already exists');
+      res.json({status:'error', error: 'user already exists'});
       return;
     }
-    logger.INFO('[ADDUSER] email sent to ' + mail_options.to);
-  });
 
-  new_user.save(function(err, user) {
-    if (err) {
-      logger.ERROR('[ADDUSER] ' + err);
-      res.json({status:"error", error: 'fatal'});
+    let key = Math.floor(Math.random() * Math.floor(100000));
+    req.body.key = key;
+    var new_user = new User(req.body);
+
+    if (req.body.username === '') {
+      logger.WARN('[ADDUSER] application rejected, no username entered');
+      res.json({status:'error', error: 'no username entered'});
       return;
     }
-    logger.INFO('[ADDUSER] added ' + user.username + ' to database');
-    res.json({status:"OK"});
+
+    if (req.body.password === '') {
+      logger.WARN('[ADDUSER] application rejected, no password entered');
+      res.json({status:'error', error: 'no password entered'});
+      return;
+    }
+
+    if (req.body.email === '') {
+      logger.WARN('[ADDUSER] application rejected, no email entered');
+      res.json({status:'error', error: 'no email entered'});
+      return;
+    }
+
+    var mail_options = {
+      from: 'cse356szen@gmail.com',
+      to: req.body.email,
+      subject: 'verification email',
+      text: 'validation key: <' + key + '>'
+    };
+
+    var transporter = nodemailer.createTransport({
+      host:'smtp.gmail.com',
+      port:465,
+      secure:true,
+      auth: {
+        user: 'cse356szen@gmail.com',
+        pass: 'chopitup'
+      }
+    });
+
+    transporter.sendMail(mail_options, function(err, info) {
+      if (err) {
+        logger.ERROR('[ADDUSER] ' + err);
+        res.json({status:'error', error: 'fatal'});
+        return;
+      }
+      let tmp = info.response.split(' ');
+      let code = tmp[2];
+
+      if (code != 'OK' ) {
+        logger.ERROR('[ADDUSER] ' + JSON.stringify(info, null, 2));
+        res.json({status:'error', error: 'fatal'});
+        return;
+      }
+      logger.INFO('[ADDUSER] email sent to ' + mail_options.to);
+    });
+
+    new_user.save(function(err, user) {
+      if (err) {
+        logger.ERROR('[ADDUSER] ' + err);
+        res.json({status:'error', error: 'fatal'});
+        return;
+      }
+      logger.INFO('[ADDUSER] added ' + user.username + ' to database');
+      res.json({status:'OK'});
+    });
   });
 };
 
@@ -134,17 +148,17 @@ exports.adduser = function(req, res) {
  * JSON: { username:, password: }
  */
 exports.login = function(req, res) {
-  logger.DEBUG('[LOGIN] recieved: ' + JSON.stringify(req.body));
+  logger.DEBUG('[LOGIN] received: ' + JSON.stringify(req.body));
 
   if (req.body.username === '') {
     logger.WARN('[LOGIN] no username entered');
-    res.json({status:"error", error: 'no username entered'});
+    res.json({status:'error', error: 'no username entered'});
     return;
   }
 
   if (req.body.password === '') {
     logger.WARN('[LOGIN] no password entered');
-    res.json({status:"error", error: 'no password entered'});
+    res.json({status:'error', error: 'no password entered'});
     return;
   }
 
@@ -153,25 +167,25 @@ exports.login = function(req, res) {
     function(err, user) {
       if (err) {
         logger.ERROR('[LOGIN] ' + err);
-        res.json({status: "error", error: 'fatal'});
+        res.json({status: 'error', error: 'fatal'});
         return;
       }
 
       if (user === null) {
         logger.WARN('[LOGIN] could not find user');
-        res.json({status: "error", error: 'incorrect login'});
+        res.json({status: 'error', error: 'incorrect login'});
         return;
       }
 
       if (user.verified != true) {
         logger.WARN('[LOGIN] user not verified');
-        res.json({status: "error", error: 'user not verified'});
+        res.json({status: 'error', error: 'user not verified'});
         return;
       }
 
       logger.INFO('[LOGIN] ' + user.username + ' logged in');
       req.session.user = user.username;
-      res.json({status: "OK"});
+      res.json({status: 'OK'});
     }
   );
 };
@@ -182,33 +196,33 @@ exports.login = function(req, res) {
  * JSON: { email:, key: }
  */
 exports.verify = function(req, res) {
-  logger.DEBUG('[VERIFY] recieved: ' + JSON.stringify(req.body));
+  logger.DEBUG('[VERIFY] received: ' + JSON.stringify(req.body));
 
   if (req.body.email === '') {
     logger.WARN('[VERIFY] no email entered');
-    res.json({status:"error", error: 'no email entered'});
+    res.json({status:'error', error: 'no email entered'});
     return;
   }
 
   if (req.body.key === '') {
     logger.WARN('[VERIFY] no key entered');
-    res.json({status:"error", error: 'no key entered'});
+    res.json({status:'error', error: 'no key entered'});
     return;
   }
 
   if (req.body.key === "abracadabra") {
-    logger.INFO('[VERIFY] abracadabra recieved');
+    logger.INFO('[VERIFY] abracadabra received');
     User.findOneAndUpdate(
       {email: req.body.email}, 
       {$set:{verified:true}},
       function(err, user) {
         if (err) {
           logger.ERROR('[VERIFY] ' + err);
-          res.json({status:"error", error: 'fatal'});
+          res.json({status:'error', error: 'fatal'});
           return;
         }
         logger.INFO('[VERIFY] ' + user.email + ' verified');
-        res.json({status:"OK"});
+        res.json({status:'OK'});
       }
     );
     return;
@@ -219,19 +233,19 @@ exports.verify = function(req, res) {
     function(err, user) {
       if (err) {
         logger.ERROR('[VERIFY] ' + err);
-        res.json({status:"error", error: 'fatal'});
+        res.json({status:'error', error: 'fatal'});
         return;
       }
 
       if(user === null) {
         logger.WARN('[VERIFY] user not found');
-        res.json({status:"error", error:"user not found"});
+        res.json({status:'error', error:"user not found"});
         return;
       }
 
       if(user.key != req.body.key){
         logger.WARN('[VERIFY] incorrect key');
-        res.json({status:"error", error:"incorrect key"});
+        res.json({status:'error', error:"incorrect key"});
         return;
       }
 
@@ -241,11 +255,11 @@ exports.verify = function(req, res) {
         function(err, user) {
           if(err){
             logger.ERROR('[VERIFY] ' + err);
-            res.json({status:"error", error: 'fatal'});
+            res.json({status:'error', error: 'fatal'});
             return;
           }
           logger.INFO('[VERIFY] ' + user.email + ' verified');
-          res.json({status:"OK"});
+          res.json({status:'OK'});
         }
       );
     }
@@ -258,17 +272,17 @@ exports.verify = function(req, res) {
  * JSON: {content:, childType: } 
  */
 exports.additem = function(req, res) {
-  logger.DEBUG('[ADDITEM] recieved: ' + JSON.stringify(req.body));
+  logger.DEBUG('[ADDITEM] received: ' + JSON.stringify(req.body));
 
   if (!req.session || !req.session.user) {
     logger.WARN('[ADDITEM] user not logged in');
-    res.json({status: "error", error:'user not logged in'});
+    res.json({status: 'error', error:'user not logged in'});
     return;
   }
 
   if (!req.body.content) { 
     logger.WARN('[ADDITEM] no content');
-    res.json({status: "error", error:'no content'});
+    res.json({status: 'error', error:'no content'});
     return;
   }
 
@@ -287,7 +301,7 @@ exports.additem = function(req, res) {
   new_item.save(function(err, item) {
     if (err) {
       logger.ERROR('[ADDITEM] ' + err);
-      res.json({status: "error", error:'fatal'});
+      res.json({status: 'error', error:'fatal'});
       return;
     }
 
@@ -301,20 +315,20 @@ exports.additem = function(req, res) {
  * Retrieves and item based on ID
  */
 exports.item = function(req, res) {
-  logger.DEBUG('[ITEM] recieved: ' + JSON.stringify(req.params));
+  logger.DEBUG('[ITEM] received: ' + JSON.stringify(req.params));
 
   Item.findOne(
     { 'id': req.params.id},
     function(err, item) {
       if (err) {
         logger.ERROR('[ITEM] ' + err);
-        res.json({status: "error", error:'fatal'});
+        res.json({status: 'error', error:'fatal'});
         return;
       }
 
       if (item === null) {
         logger.WARN('[ITEM] item not found');
-        res.json({status: "error", error:'item not found'});
+        res.json({status: 'error', error:'item not found'});
         return;
       }
 
@@ -340,20 +354,20 @@ exports.item = function(req, res) {
  * Retrieves user based on username
  */
 exports.user = function(req, res) {
-  logger.DEBUG('[USER] recieved: ' + JSON.stringify(req.params));
+  logger.DEBUG('[USER] received: ' + JSON.stringify(req.params));
 
   const options = { 'username': req.params.username};
 
   User.findOne(options, function(err, user) {
       if (err) {
         logger.ERROR('[USER] ' + err);
-        res.json({status: "error", error:'fatal'});
+        res.json({status: 'error', error:'fatal'});
         return;
       }
 
       if (user === null) {
         logger.WARN('[USER] user not found');
-        res.json({status: "error", error:'user not found'});
+        res.json({status: 'error', error:'user not found'});
         return;
       }
 
@@ -362,7 +376,7 @@ exports.user = function(req, res) {
         user: {
           email: user.email,
           followers: user.followers.length,
-          following: user.following.length,
+          following: 0, //TODO
         }
       };
 
@@ -378,8 +392,8 @@ exports.user = function(req, res) {
  * Retrieves posts based on username
  */
 exports.posts = function(req, res) {
-  logger.DEBUG('[POSTS] recieved: ' + JSON.stringify(req.params, null, 2));
-  logger.DEBUG('[POSTS] recieved: ' + JSON.stringify(req.query, null, 2));
+  logger.DEBUG('[POSTS] received: ' + JSON.stringify(req.params, null, 2));
+  logger.DEBUG('[POSTS] received: ' + JSON.stringify(req.query, null, 2));
 
   //LIMIT
   let limit = 50;
@@ -395,7 +409,7 @@ exports.posts = function(req, res) {
   Item.find(options, function(err, results) {
       if (err) {
         logger.ERROR('[POSTS] ' + err);
-        res.json({status: "error", error:'fatal'});
+        res.json({status: 'error', error:'fatal'});
       }
 
       var items = results.map(item => item.id);
@@ -413,12 +427,60 @@ exports.posts = function(req, res) {
 };
 
 /**
+ * FOLLOW
+ * Follows another user
+ * JSON: {username:, follow: } 
+ */
+exports.follow = function(req, res) {
+  logger.DEBUG('[FOLLOW] received: ' + JSON.stringify(req.body, null, 2));
+
+  if (!req.session || !req.session.user) {
+    logger.WARN('[FOLLOW] user not logged in');
+    res.json({status: 'error', error: 'user not logged in'});
+    return;
+  }
+
+  const filter = {'username': req.body.username};
+
+  var follow = req.body.follow;
+  if (follow === undefined) follow = true;
+
+  if (follow) {
+    var update = {$addToSet: {'followers': req.session.user}};
+  } else {
+    var update = {$pull: {'followers': req.session.user}};
+  }
+
+  User.findOneAndUpdate(filter, update, function(err, user) {
+    if (err) {
+      logger.ERROR('[FOLLOW] ' + err);
+      res.json({status: 'error', error: 'fatal'});
+      return;
+    } 
+
+    if (user === null) {
+      logger.WARN('[FOLLOW] could not find user');
+      res.json({status: 'error', error: 'could not find user'});
+      return;
+    }
+
+    if (follow) {
+      logger.INFO('[FOLLOW] added ' + req.session.user + ' to ' + user.username + "'s follower list");
+    } else {
+      logger.INFO('[FOLLOW] removed ' + req.session.user + ' to ' + user.username + "'s follower list");
+    }
+
+    res.json({status: 'OK'});
+  });
+};
+
+/**
  * SEARCH
  * Searches the database for 'tweets'
  * JSON: {timestamp:, limit:, q:, username:, following:} 
  */
 exports.search = function(req, res) {
-  logger.DEBUG('[SEARCH] recieved: ' + JSON.stringify(req.body, null, 2));
+  logger.DEBUG('[SEARCH] received: ' + JSON.stringify(req.body, null, 2));
 
   const options = {};
 
@@ -455,7 +517,7 @@ exports.search = function(req, res) {
   Item.find(options, function(err, results) {
       if (err) {
         logger.ERROR('[SEARCH] ' + err);
-        res.json({status: "error", error:'fatal'});
+        res.json({status: 'error', error:'fatal'});
       }
 
       let json = {
@@ -473,16 +535,16 @@ exports.search = function(req, res) {
  * Logs user out
  */
 exports.logout = function(req, res) {
-  logger.DEBUG('[LOGOUT] recieved: ' + JSON.stringify(req.body));
+  logger.DEBUG('[LOGOUT] received: ' + JSON.stringify(req.body));
 
   if (!req.session || !req.session.user) {
     logger.WARN('[LOGOUT] user not logged in');
-    res.json({status: "error", error:'user not logged in'});
+    res.json({status: 'error', error:'user not logged in'});
     return;
   }
   logger.INFO('[LOGOUT] ' + req.session.user + ' logged out');
   req.session.reset();
-  res.json({status:"OK"});
+  res.json({status:'OK'});
 };
 
 /**

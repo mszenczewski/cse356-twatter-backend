@@ -19,13 +19,8 @@ const UserSchema = new Schema({
     type: Boolean,
     default: false,
   },
-  following: {
-    type: Array,
-    default: [],
-  },
   followers: {
     type: Array,
-    default: [],
   },
 });
 
