@@ -3,8 +3,10 @@ module.exports = function(app) {
   var con = require('../controllers/controller');
 
   //GET
-  app.route('/item/:id').get(con.item);
   app.route('/').get(con.home);
+  app.route('/item/:id').get(con.item);
+  app.route('/user/:username').get(con.user);
+  app.route('/user/:username/posts').get(con.posts);
 
   //POST
   app.route('/adduser').post(con.adduser);

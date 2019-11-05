@@ -336,6 +336,83 @@ exports.item = function(req, res) {
 };
 
 /**
+ * USER
+ * Retrieves user based on username
+ */
+exports.user = function(req, res) {
+  logger.DEBUG('[USER] recieved: ' + JSON.stringify(req.params));
+
+  const options = { 'username': req.params.username};
+
+  User.findOne(options, function(err, user) {
+      if (err) {
+        logger.ERROR('[USER] ' + err);
+        res.json({status: "error", error:'fatal'});
+        return;
+      }
+
+      if (user === null) {
+        logger.WARN('[USER] user not found');
+        res.json({status: "error", error:'user not found'});
+        return;
+      }
+
+      let json = {
+        status: 'OK', 
+        user: {
+          email: user.email,
+          followers: user.followers.length,
+          following: user.following.length,
+        }
+      };
+
+      logger.INFO('[USER] ' + user.username +' found');
+      logger.DEBUG('[USER] ' + JSON.stringify(json, null, 2));
+
+      res.send(json);
+    });
+};
+
+/**
+ * POSTS
+ * Retrieves posts based on username
+ */
+exports.posts = function(req, res) {
+  logger.DEBUG('[POSTS] recieved: ' + JSON.stringify(req.params, null, 2));
+  logger.DEBUG('[POSTS] recieved: ' + JSON.stringify(req.query, null, 2));
+
+  //LIMIT
+  let limit = 50;
+  if (req.query.limit !== null && !isNaN(parseInt(req.query.limit))) {
+    limit = req.query.limit;
+  }
+  if (limit > 200) {
+    limit = 200;
+  }
+
+  const options = { 'username': req.params.username};
+
+  Item.find(options, function(err, results) {
+      if (err) {
+        logger.ERROR('[POSTS] ' + err);
+        res.json({status: "error", error:'fatal'});
+      }
+
+      var items = results.map(item => item.id);
+
+      let json = {
+        status:'OK',
+        items: items,
+      };
+
+      logger.INFO('[POSTS] ' + json.items.length + ' results sent');
+      logger.DEBUG('[POSTS] ' + JSON.stringify(json, null, 2));
+
+      res.send(json);
+    }).limit(parseInt(limit));
+};
+
+/**
  * SEARCH
  * Searches the database for 'tweets'
  * JSON: {timestamp:, limit:, q:, username:, following:} 
