@@ -9,7 +9,10 @@ require('./api/models/item');
 
 mongoose.Promise = global.Promise;
 mongoose.connect('mongodb://localhost/twatterdb', {useNewUrlParser: true, useUnifiedTopology: true}); 
+
 mongoose.set('useFindAndModify', false);
+mongoose.set('useCreateIndex', true);
+mongoose.set('useNewUrlParser', true);
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
