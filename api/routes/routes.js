@@ -19,4 +19,5 @@ module.exports = function(app) {
   app.route('/removeallusers').post(con.removeallusers);
   app.route('/listallitems').post(con.listallitems);
   app.route('/removeallitems').post(con.removeallitems);
+  app.route('/reset').post(con.reset);
 };
