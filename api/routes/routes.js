@@ -10,6 +10,9 @@ app.route('/user/:username/posts').get(con.posts);
 app.route('/user/:username/followers').get(con.followers);
 app.route('/user/:username/following').get(con.following);
 
+//DELETE
+app.route('/item/:id').delete(con.delete);
+
 //POST
 app.route('/adduser').post(con.adduser);
 app.route('/login').post(con.login);
