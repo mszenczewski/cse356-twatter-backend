@@ -356,35 +356,47 @@ exports.item = function(req, res) {
 exports.user = function(req, res) {
   logger.DEBUG('[USER] received: ' + JSON.stringify(req.params));
 
-  const options = { 'username': req.params.username};
+  User.findOne({'username': req.params.username}, function(err, user) {
+    if (err) {
+      logger.ERROR('[USER] ' + err);
+      res.json({status: 'error', error:'fatal'});
+      return;
+    }
 
-  User.findOne(options, function(err, user) {
+    if (user === null) {
+      logger.WARN('[USER] user not found');
+      res.json({status: 'error', error:'user not found'});
+      return;
+    }
+
+    User.find({$text: {$search: req.params.username}}, function(err, results) {
       if (err) {
         logger.ERROR('[USER] ' + err);
         res.json({status: 'error', error:'fatal'});
         return;
       }
 
-      if (user === null) {
-        logger.WARN('[USER] user not found');
-        res.json({status: 'error', error:'user not found'});
+      if (results === null) {
+        logger.WARN('[USER] not following anyone');
+        res.json({status: 'error', error:'not following anyone'});
         return;
       }
 
       let json = {
-        status: 'OK', 
+        status: 'OK',
         user: {
           email: user.email,
           followers: user.followers.length,
-          following: 0, //TODO
+          following: results.length
         }
       };
 
-      logger.INFO('[USER] ' + user.username +' found');
-      logger.DEBUG('[USER] ' + JSON.stringify(json, null, 2));
+      logger.INFO('[FOLLOWING] ' + user.username + ' info sent');
+      logger.DEBUG('[FOLLOWING] ' + JSON.stringify(json, null, 2));
 
       res.send(json);
     });
+  });
 };
 
 /**
@@ -428,7 +440,7 @@ exports.posts = function(req, res) {
 
 /**
  * FOLLOWERS
- * Retrieves posts based on username
+ * Retrieves followers based on username
  */
 exports.followers = function(req, res) {
   logger.DEBUG('[FOLLOWERS] received: ' + JSON.stringify(req.params, null, 2));
@@ -514,6 +526,51 @@ exports.follow = function(req, res) {
     res.json({status: 'OK'});
   });
 };
+
+/**
+ * FOLLOWING
+ * Searches the database for users that are being followed
+ */
+exports.following = function(req, res) {
+  logger.DEBUG('[FOLLOWING] received: ' + JSON.stringify(req.params, null, 2));
+  logger.DEBUG('[FOLLOWING] received: ' + JSON.stringify(req.query, null, 2));
+
+  //LIMIT
+  let limit = 25;
+  if (req.query.limit !== null && !isNaN(parseInt(req.query.limit))) {
+    limit = req.query.limit;
+  }
+  if (limit > 100) {
+    limit = 100;
+  }
+
+  User.find({$text: {$search: req.params.username}}, function(err, results) {
+    if (err) {
+      logger.ERROR('[FOLLOWING] ' + err);
+      res.json({status: 'error', error:'fatal'});
+      return;
+    }
+
+    if (results === null) {
+      logger.WARN('[FOLLOWING] not following anyone');
+      res.json({status: 'error', error:'not following anyone'});
+      return;
+    }
+
+    var following = results.map(item => item.username);
+
+    let json = {
+      status:'OK',
+      users: following,
+    };
+
+    logger.INFO('[FOLLOWING] ' + json.users.length + ' results sent');
+    logger.DEBUG('[FOLLOWING] ' + JSON.stringify(json, null, 2));
+
+    res.send(json);
+  }).limit(parseInt(limit));
+};
+
 
 /**
  * SEARCH

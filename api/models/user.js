@@ -24,4 +24,6 @@ const UserSchema = new Schema({
   },
 });
 
+UserSchema.index( { followers: 'text' } );
+
 module.exports = mongoose.model('Users', UserSchema);
