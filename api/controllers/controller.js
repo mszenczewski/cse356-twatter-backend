@@ -22,7 +22,7 @@ const daily_rotate_file_transport = new transports.DailyRotateFile
 });
 
 const logger = createLogger({
-  level: 'INFO',
+  level: 'DEBUG',
   levels: { 
     ERROR: 0,
     WARN: 1,
@@ -338,32 +338,44 @@ exports.item = function(req, res) {
 /**
  * SEARCH
  * Searches the database for 'tweets'
- * JSON: {timestamp:, limit: } 
+ * JSON: {timestamp:, limit:, q:, username:, following:} 
  */
 exports.search = function(req, res) {
-  logger.DEBUG('[SEARCH] recieved: ' + JSON.stringify(req.body));
+  logger.DEBUG('[SEARCH] recieved: ' + JSON.stringify(req.body, null, 2));
 
-  let timestamp = req.body.timestamp;
+  const options = {};
 
+  //TIMESTAMP
   if (!req.body.timestamp) {
     let d = new Date();
-    timestamp = d.getTime() / 1000; 
+    let t = d.getTime() / 1000;
+    options.timestamp = {$lte: t}; 
+  } else {
+    options.timestamp = {$lte: req.body.timestamp}; 
   }
 
+  //LIMIT
   let limit = 25;
-
   if (req.body.limit !== null && !isNaN(parseInt(req.body.limit))) {
     limit = req.body.limit;
   }
-
   if (limit > 100) {
     limit = 100;
   }
 
-  logger.INFO('[SEARCH] query: ' + timestamp + ', ' + limit);
+  //Q
+  if (req.body.q) {
+    options.$text = {$search: req.body.q};
+  }
 
-  Item.find({timestamp: {$lte: timestamp}}, 
-    function(err, results) {
+  //USERNAME
+  if (req.body.username) {
+    options.username = req.body.username;
+  }
+
+  logger.DEBUG('[SEARCH] options: ' + JSON.stringify(options, null, 2));
+
+  Item.find(options, function(err, results) {
       if (err) {
         logger.ERROR('[SEARCH] ' + err);
         res.json({status: "error", error:'fatal'});
