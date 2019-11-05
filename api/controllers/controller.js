@@ -610,22 +610,50 @@ exports.search = function(req, res) {
     options.username = req.body.username;
   }
 
-  logger.DEBUG('[SEARCH] options: ' + JSON.stringify(options, null, 2));
+  //FOLLOWING
+  var user_options = {};
+  if (req.session && req.session.user && req.body.following === true) {
+    user_options.$text = { $search: req.session.user };
+  }
 
-  Item.find(options, function(err, results) {
-      if (err) {
-        logger.ERROR('[SEARCH] ' + err);
-        res.json({status: 'error', error:'fatal'});
-      }
+  User.find(user_options, function(err, users) {
+    if (err) {
+      logger.ERROR('[SEARCH] ' + err);
+      res.json({status: 'error', error:'fatal'});
+      return;
+    }
 
-      let json = {
-        status:'OK',
-        items: results,
-      };
+    if (users === null) {
+      logger.WARN('[SEARCH] no users found');
+      res.json({status: 'error', error: 'no users found'});
+      return;
+    }
 
-      logger.INFO('[SEARCH] ' + json.items.length + ' results sent');
-      res.send(json);
-    }).limit(parseInt(limit));
+    var followed_users = users.map(item => item.username);
+
+    logger.DEBUG('[SEARCH] options: ' + JSON.stringify(options, null, 2));
+
+    Item.find(options, function(err, results) {
+        if (err) {
+          logger.ERROR('[SEARCH] ' + err);
+          res.json({status: 'error', error:'fatal'});
+        }
+
+        function follow_filter(value) {
+          return followed_users.includes(value.username);
+        }
+
+        var filtered_results = results.filter(follow_filter);
+        
+        let json = {
+          status:'OK',
+          items: filtered_results
+        };
+
+        logger.INFO('[SEARCH] ' + json.items.length + ' results sent');
+        res.send(json);
+      }).limit(parseInt(limit));
+  });
 };
 
 /**

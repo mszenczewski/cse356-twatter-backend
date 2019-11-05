@@ -28,6 +28,6 @@ const ItemSchema = new Schema({
   },
 });
 
-ItemSchema.index( { content: 'text' } );
+ItemSchema.index( { content: 'text' , id: 'text'} );
 
 module.exports = mongoose.model('Items', ItemSchema);
