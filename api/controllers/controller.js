@@ -64,13 +64,13 @@ exports.adduser = function(req, res) {
   User.findOne({ 'username': req.body.username}, function(err, user) {
     if (err) {
       logger.ERROR('[ADDUSER] ' + err);
-      res.json({status:'error', error: 'fatal'});
+      res.json({status: 'error', error: 'fatal'});
       return;
     }
 
     if (user != null) {
       logger.WARN('[ADDUSER] user already exists');
-      res.json({status:'error', error: 'user already exists'});
+      res.json({status: 'error', error: 'user already exists'});
       return;
     }
 
@@ -80,19 +80,19 @@ exports.adduser = function(req, res) {
 
     if (req.body.username === '') {
       logger.WARN('[ADDUSER] application rejected, no username entered');
-      res.json({status:'error', error: 'no username entered'});
+      res.json({status: 'error', error: 'no username entered'});
       return;
     }
 
     if (req.body.password === '') {
       logger.WARN('[ADDUSER] application rejected, no password entered');
-      res.json({status:'error', error: 'no password entered'});
+      res.json({status: 'error', error: 'no password entered'});
       return;
     }
 
     if (req.body.email === '') {
       logger.WARN('[ADDUSER] application rejected, no email entered');
-      res.json({status:'error', error: 'no email entered'});
+      res.json({status: 'error', error: 'no email entered'});
       return;
     }
 
@@ -104,9 +104,9 @@ exports.adduser = function(req, res) {
     };
 
     var transporter = nodemailer.createTransport({
-      host:'smtp.gmail.com',
-      port:465,
-      secure:true,
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true,
       auth: {
         user: 'cse356szen@gmail.com',
         pass: 'chopitup'
@@ -116,7 +116,7 @@ exports.adduser = function(req, res) {
     transporter.sendMail(mail_options, function(err, info) {
       if (err) {
         logger.ERROR('[ADDUSER] ' + err);
-        res.json({status:'error', error: 'fatal'});
+        res.json({status: 'error', error: 'fatal'});
         return;
       }
       let tmp = info.response.split(' ');
@@ -124,7 +124,7 @@ exports.adduser = function(req, res) {
 
       if (code != 'OK' ) {
         logger.ERROR('[ADDUSER] ' + JSON.stringify(info, null, 2));
-        res.json({status:'error', error: 'fatal'});
+        res.json({status: 'error', error: 'fatal'});
         return;
       }
       logger.INFO('[ADDUSER] email sent to ' + mail_options.to);
@@ -133,11 +133,11 @@ exports.adduser = function(req, res) {
     new_user.save(function(err, user) {
       if (err) {
         logger.ERROR('[ADDUSER] ' + err);
-        res.json({status:'error', error: 'fatal'});
+        res.json({status: 'error', error: 'fatal'});
         return;
       }
       logger.INFO('[ADDUSER] added ' + user.username + ' to database');
-      res.json({status:'OK'});
+      res.json({status: 'OK'});
     });
   });
 };
@@ -152,13 +152,13 @@ exports.login = function(req, res) {
 
   if (req.body.username === '') {
     logger.WARN('[LOGIN] no username entered');
-    res.json({status:'error', error: 'no username entered'});
+    res.json({status: 'error', error: 'no username entered'});
     return;
   }
 
   if (req.body.password === '') {
     logger.WARN('[LOGIN] no password entered');
-    res.json({status:'error', error: 'no password entered'});
+    res.json({status: 'error', error: 'no password entered'});
     return;
   }
 
@@ -200,70 +200,47 @@ exports.verify = function(req, res) {
 
   if (req.body.email === '') {
     logger.WARN('[VERIFY] no email entered');
-    res.json({status:'error', error: 'no email entered'});
+    res.json({status: 'error', error: 'no email entered'});
     return;
   }
 
   if (req.body.key === '') {
     logger.WARN('[VERIFY] no key entered');
-    res.json({status:'error', error: 'no key entered'});
+    res.json({status: 'error', error: 'no key entered'});
     return;
   }
 
-  if (req.body.key === "abracadabra") {
-    logger.INFO('[VERIFY] abracadabra received');
-    User.findOneAndUpdate(
-      {email: req.body.email}, 
-      {$set:{verified:true}},
-      function(err, user) {
-        if (err) {
-          logger.ERROR('[VERIFY] ' + err);
-          res.json({status:'error', error: 'fatal'});
-          return;
-        }
-        logger.INFO('[VERIFY] ' + user.email + ' verified');
-        res.json({status:'OK'});
-      }
-    );
-    return;
-  }
+  User.findOne({email: req.body.email}, function(err, user) {
+    if (err) {
+      logger.ERROR('[VERIFY] ' + err);
+      res.json({status: 'error', error: 'fatal'});
+      return;
+    }
 
-  User.findOne(
-    {email: req.body.email}, 
-    function(err, user) {
+    if(user === null) {
+      logger.WARN('[VERIFY] user not found');
+      res.json({status: 'error', error: 'user not found'});
+      return;
+    }
+
+    if(user.key !== req.body.key && req.body.key !== 'abracadabra'){
+      logger.WARN('[VERIFY] incorrect key');
+      res.json({status: 'error', error: 'incorrect key'});
+      return;
+    }
+
+    user.verified = true;
+
+    user.save(function(err, user) {
       if (err) {
         logger.ERROR('[VERIFY] ' + err);
-        res.json({status:'error', error: 'fatal'});
+        res.json({status: 'error', error: 'fatal'});
         return;
       }
-
-      if(user === null) {
-        logger.WARN('[VERIFY] user not found');
-        res.json({status:'error', error:"user not found"});
-        return;
-      }
-
-      if(user.key != req.body.key){
-        logger.WARN('[VERIFY] incorrect key');
-        res.json({status:'error', error:"incorrect key"});
-        return;
-      }
-
-      User.findOneAndUpdate(
-        {email: req.body.email}, 
-        {$set:{verified:true}},
-        function(err, user) {
-          if(err){
-            logger.ERROR('[VERIFY] ' + err);
-            res.json({status:'error', error: 'fatal'});
-            return;
-          }
-          logger.INFO('[VERIFY] ' + user.email + ' verified');
-          res.json({status:'OK'});
-        }
-      );
-    }
-  );
+      logger.INFO('[VERIFY] ' + user.email + ' verified');
+      res.json({status: 'OK'});
+    });
+  });
 };
 
 /**
@@ -276,20 +253,20 @@ exports.additem = function(req, res) {
 
   if (!req.session || !req.session.user) {
     logger.WARN('[ADDITEM] user not logged in');
-    res.json({status: 'error', error:'user not logged in'});
+    res.json({status: 'error', error: 'user not logged in'});
     return;
   }
 
   if (!req.body.content) { 
     logger.WARN('[ADDITEM] no content');
-    res.json({status: 'error', error:'no content'});
+    res.json({status: 'error', error: 'no content'});
     return;
   }
 
-  let id = Math.floor(Math.random() * Math.floor(100000));
+  const id = Math.floor(Math.random() * Math.floor(100000));
   req.body.id = id;
 
-  let d = new Date();
+  const d = new Date();
   req.body.timestamp = d.getTime() / 1000; 
 
   req.body.username = req.session.user;
@@ -301,12 +278,12 @@ exports.additem = function(req, res) {
   new_item.save(function(err, item) {
     if (err) {
       logger.ERROR('[ADDITEM] ' + err);
-      res.json({status: 'error', error:'fatal'});
+      res.json({status: 'error', error: 'fatal'});
       return;
     }
 
     logger.INFO('[ADDITEM] item ' + item.id + ' added');
-    res.json({status:'OK', id: item.id});
+    res.json({status: 'OK', id: item.id});
   });
 };
 
@@ -317,36 +294,34 @@ exports.additem = function(req, res) {
 exports.item = function(req, res) {
   logger.DEBUG('[ITEM] received: ' + JSON.stringify(req.params));
 
-  Item.findOne(
-    { 'id': req.params.id},
-    function(err, item) {
-      if (err) {
-        logger.ERROR('[ITEM] ' + err);
-        res.json({status: 'error', error:'fatal'});
-        return;
-      }
+  Item.findOne({'id': req.params.id}, function(err, item) {
+    if (err) {
+      logger.ERROR('[ITEM] ' + err);
+      res.json({status: 'error', error: 'fatal'});
+      return;
+    }
 
-      if (item === null) {
-        logger.WARN('[ITEM] item not found');
-        res.json({status: 'error', error:'item not found'});
-        return;
-      }
+    if (item === null) {
+      logger.WARN('[ITEM] item not found');
+      res.json({status: 'error', error: 'item not found'});
+      return;
+    }
 
-      let json = {
-        status: 'OK', 
-        item: {
-          content: item.content,
-          id: item.id,
-          username: item.username,
-          property: item.property,
-          retweeted: item.retweeted,
-          timestamp: item.timestamp,
-          }
-      };
+    const json = {
+      status: 'OK', 
+      item: {
+        content: item.content,
+        id: item.id,
+        username: item.username,
+        property: item.property,
+        retweeted: item.retweeted,
+        timestamp: item.timestamp,
+        }
+    };
 
-      logger.INFO('[ITEM] ' + item.id +' found');
-      res.send(json);
-    });
+    logger.INFO('[ITEM] ' + item.id + ' found');
+    res.send(json);
+  });
 };
 
 /**
@@ -359,26 +334,26 @@ exports.user = function(req, res) {
   User.findOne({'username': req.params.username}, function(err, user) {
     if (err) {
       logger.ERROR('[USER] ' + err);
-      res.json({status: 'error', error:'fatal'});
+      res.json({status: 'error', error: 'fatal'});
       return;
     }
 
     if (user === null) {
       logger.WARN('[USER] user not found');
-      res.json({status: 'error', error:'user not found'});
+      res.json({status: 'error', error: 'user not found'});
       return;
     }
 
     User.find({$text: {$search: req.params.username}}, function(err, results) {
       if (err) {
         logger.ERROR('[USER] ' + err);
-        res.json({status: 'error', error:'fatal'});
+        res.json({status: 'error', error: 'fatal'});
         return;
       }
 
       if (results === null) {
         logger.WARN('[USER] not following anyone');
-        res.json({status: 'error', error:'not following anyone'});
+        res.json({status: 'error', error: 'not following anyone'});
         return;
       }
 
@@ -421,13 +396,13 @@ exports.posts = function(req, res) {
   Item.find(options, function(err, results) {
       if (err) {
         logger.ERROR('[POSTS] ' + err);
-        res.json({status: 'error', error:'fatal'});
+        res.json({status: 'error', error: 'fatal'});
       }
 
       var items = results.map(item => item.id);
 
       let json = {
-        status:'OK',
+        status: 'OK',
         items: items,
       };
 
@@ -458,17 +433,17 @@ exports.followers = function(req, res) {
   User.findOne({ 'username': req.params.username}, function(err, user) {
       if (err) {
         logger.ERROR('[FOLLOWERS] ' + err);
-        res.json({status: 'error', error:'fatal'});
+        res.json({status: 'error', error: 'fatal'});
       }
 
       if (user === null) {
         logger.ERROR('[FOLLOWERS] ' + err);
-        res.json({status: 'error', error:'user does not exist'}); 
+        res.json({status: 'error', error: 'user does not exist'}); 
         return;
       }
 
       let json = {
-        status:'OK',
+        status: 'OK',
         users: user.followers,
       };
 
@@ -547,20 +522,20 @@ exports.following = function(req, res) {
   User.find({$text: {$search: req.params.username}}, function(err, results) {
     if (err) {
       logger.ERROR('[FOLLOWING] ' + err);
-      res.json({status: 'error', error:'fatal'});
+      res.json({status: 'error', error: 'fatal'});
       return;
     }
 
     if (results === null) {
       logger.WARN('[FOLLOWING] not following anyone');
-      res.json({status: 'error', error:'not following anyone'});
+      res.json({status: 'error', error: 'not following anyone'});
       return;
     }
 
     var following = results.map(item => item.username);
 
     let json = {
-      status:'OK',
+      status: 'OK',
       users: following,
     };
 
@@ -619,7 +594,7 @@ exports.search = function(req, res) {
   User.find(user_options, function(err, users) {
     if (err) {
       logger.ERROR('[SEARCH] ' + err);
-      res.json({status: 'error', error:'fatal'});
+      res.json({status: 'error', error: 'fatal'});
       return;
     }
 
@@ -636,7 +611,7 @@ exports.search = function(req, res) {
     Item.find(options, function(err, results) {
         if (err) {
           logger.ERROR('[SEARCH] ' + err);
-          res.json({status: 'error', error:'fatal'});
+          res.json({status: 'error', error: 'fatal'});
         }
 
         function follow_filter(value) {
@@ -646,7 +621,7 @@ exports.search = function(req, res) {
         var filtered_results = results.filter(follow_filter);
         
         let json = {
-          status:'OK',
+          status: 'OK',
           items: filtered_results
         };
 
@@ -665,12 +640,12 @@ exports.logout = function(req, res) {
 
   if (!req.session || !req.session.user) {
     logger.WARN('[LOGOUT] user not logged in');
-    res.json({status: 'error', error:'user not logged in'});
+    res.json({status: 'error', error: 'user not logged in'});
     return;
   }
   logger.INFO('[LOGOUT] ' + req.session.user + ' logged out');
   req.session.reset();
-  res.json({status:'OK'});
+  res.json({status: 'OK'});
 };
 
 /**
@@ -680,37 +655,37 @@ exports.logout = function(req, res) {
 exports.delete = function(req, res) {
   if (!req.session || !req.session.user) {
     logger.WARN('[DELETE] user not logged in');
-    res.status(403).json({status: 'error', error:'user not logged in'});
+    res.status(403).json({status: 'error', error: 'user not logged in'});
     return;
   }
 
   Item.findOne({'id': req.params.id}, function(err, item) {
     if (err) {
       logger.ERROR('[DELETE]: ' + err);
-      res.status(500).json({status:'error', error: 'fatal'});
+      res.status(500).json({status: 'error', error: 'fatal'});
       return;
     }
 
     if (item === null) {
       logger.ERROR('[WARN]: item not found');
-      res.status(500).json({status:'error', error: 'item not found'});
+      res.status(500).json({status: 'error', error: 'item not found'});
       return;
     }
 
     if (item.username !== req.session.user) {
       logger.WARN('[DELETE]: user not authorized to delete this item');
-      res.status(403).json({status: 'error', error:'user not authorized to delete this item'});
+      res.status(403).json({status: 'error', error: 'user not authorized to delete this item'});
       return;
     }
 
     Item.deleteOne({id: req.params.id}, function(err, item) {
       if (err) {
         logger.ERROR('[DELETE]: ' + err);
-        res.status(500).json({status:'error', error: 'fatal'});
+        res.status(500).json({status: 'error', error: 'fatal'});
         return;
       }
       logger.INFO('[DELETE] ' + req.params.id + ' removed');
-      res.status(200).json({status:'OK'});
+      res.status(200).json({status: 'OK'});
     });
   });
 };
@@ -724,7 +699,7 @@ exports.listallusers = function(req, res) {
   User.find({}, function(err, users) {
     if (err) {
       logger.ERROR('[LISTALLUSERS] ' + err);
-      res.json({status:'error', error: 'fatal'});
+      res.json({status: 'error', error: 'fatal'});
       return;
     }
     res.json(users);
@@ -739,7 +714,7 @@ exports.listallitems = function(req, res) {
   Item.find({}, function(err, items) {
     if (err) {
       logger.ERROR('[LISTALLITEMS] ' + err);
-      res.json({status:'error', error: 'fatal'});
+      res.json({status: 'error', error: 'fatal'});
       return;
     }
     res.json(items);
@@ -754,10 +729,10 @@ exports.removeallusers = function(req, res) {
   User.deleteMany({}, function(err, user) {
     if (err) {
       logger.ERROR('[REMOVEALLUSERS] ' + err);
-      res.json({status:'error'});
+      res.json({status: 'error'});
     } else {
       logger.INFO('[REMOVEALLUSERS] all users removed');
-      res.json({status:'OK'});
+      res.json({status: 'OK'});
     }  
   });
 };
@@ -770,11 +745,11 @@ exports.removeallitems = function(req, res) {
   Item.deleteMany({}, function(err, item) {
     if (err) {
       logger.ERROR('[REMOVEALLITEMS]: ' + err);
-      res.json({status:'error', error: 'fatal'});
+      res.json({status: 'error', error: 'fatal'});
       return;
     }
     logger.INFO('[REMOVEALLITEMS] all items removed');
-    res.json({status:'OK'});
+    res.json({status: 'OK'});
   });
 };
 
@@ -804,8 +779,8 @@ exports.reset = function(req, res) {
   });
 
   if (error === true) {
-    res.json({status:'error', error: 'fatal'});
+    res.json({status: 'error', error: 'fatal'});
   } else {
-    res.json({status:'OK'});
+    res.json({status: 'OK'});
   }
 };
