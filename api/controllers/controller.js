@@ -665,6 +665,8 @@ exports.logout = function(req, res) {
  * Removes a 'tweet' from database
  */
 exports.delete = function(req, res) {
+  logger.DEBUG('[DELETE] received: ' + JSON.stringify(req.params));
+
   if (!req.session || !req.session.user) {
     logger.WARN('[DELETE] user not logged in');
     res.status(403).json({status: 'error', error: 'user not logged in'});
