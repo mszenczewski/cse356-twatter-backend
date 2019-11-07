@@ -588,7 +588,12 @@ exports.search = function(req, res) {
 
   //FOLLOWING
   var user_options = {};
-  if (req.session && req.session.user && req.body.following === true) {
+  if (req.body.following === true) {
+    if (!req.session || !req.session.user) {
+      logger.WARN('[SEARCH] user not logged in');
+      res.json({status: 'error', error: 'user not logged in'});
+      return;
+    }
     user_options.$text = { $search: req.session.user };
   }
 
