@@ -463,6 +463,12 @@ exports.followers = function(req, res) {
 exports.follow = function(req, res) {
   logger.DEBUG('[FOLLOW] received: ' + JSON.stringify(req.body, null, 2));
 
+  if (req.body.username === '') {
+    logger.WARN('[FOLLOW] request rejected, no username entered');
+    res.json({status: 'error', error: 'no username entered'});
+    return;
+  }
+
   if (!req.session || !req.session.user) {
     logger.WARN('[FOLLOW] user not logged in');
     res.json({status: 'error', error: 'user not logged in'});
