@@ -21,6 +21,7 @@ app.route('/verify').post(con.verify);
 app.route('/additem').post(con.additem);
 app.route('/search').post(con.search);
 app.route('/follow').post(con.follow);
+app.route('/loggedin').post(con.loggedin);
 
 //DEBUGGING
 app.route('/listallusers').post(con.listallusers);
