@@ -565,9 +565,9 @@ exports.search = function(req, res) {
   if (!req.body.timestamp) {
     let d = new Date();
     let t = d.getTime() / 1000;
-    options.timestamp = {$lte: t}; 
+    options.timestamp = { $lte: t }; 
   } else {
-    options.timestamp = {$lte: req.body.timestamp}; 
+    options.timestamp = { $lte: req.body.timestamp }; 
   }
 
   //LIMIT
@@ -589,55 +589,65 @@ exports.search = function(req, res) {
     options.username = req.body.username;
   }
 
-  //FOLLOWING
-  var user_options = {};
-  if (req.body.following === true) {
+  if(req.body.following === true) {
     if (!req.session || !req.session.user) {
       logger.WARN('[SEARCH] user not logged in');
       res.json({status: 'error', error: 'user not logged in'});
       return;
     }
-    user_options.$text = { $search: req.session.user };
-  }
 
-  User.find(user_options, function(err, users) {
-    if (err) {
-      logger.ERROR('[SEARCH] ' + err);
-      res.json({status: 'error', error: 'fatal'});
-      return;
-    }
+    User.findOne({username: req.session.user}, function(err, user) {
+      if (err) {
+        logger.ERROR('[SEARCH] ' + err);
+        res.json({status: 'error', error: 'fatal'});
+        return;
+      } 
 
-    if (users === null) {
-      logger.WARN('[SEARCH] no users found');
-      res.json({status: 'error', error: 'no users found'});
-      return;
-    }
+      if (req.body.username && user.following.indexOf(req.body.username) === -1) {
+        logger.WARN('[SEARCH] searched for user not in following list');
+        res.json({status: 'OK', items: []});
+        return;
+      }
 
-    var followed_users = users.map(item => item.username);
+      if (!req.body.username) {
+        options.username = { $in: user.following };
+      }
 
-    logger.DEBUG('[SEARCH] options: ' + JSON.stringify(options, null, 2));
+      logger.DEBUG('[SEARCH] options: ' + JSON.stringify(options, null, 2));
 
-    Item.find(options, function(err, results) {
+      Item.find(options, function(err, results) {
         if (err) {
           logger.ERROR('[SEARCH] ' + err);
           res.json({status: 'error', error: 'fatal'});
         }
-
-        function follow_filter(value) {
-          return followed_users.includes(value.username);
-        }
-
-        var filtered_results = results.filter(follow_filter);
         
         let json = {
           status: 'OK',
-          items: filtered_results
+          items: results
         };
 
         logger.INFO('[SEARCH] ' + json.items.length + ' results sent');
         res.send(json);
       }).limit(parseInt(limit));
-  });
+    });
+  } else {
+    logger.DEBUG('[SEARCH] options: ' + JSON.stringify(options, null, 2));
+
+    Item.find(options, function(err, results) {
+      if (err) {
+        logger.ERROR('[SEARCH] ' + err);
+        res.json({status: 'error', error: 'fatal'});
+      }
+      
+      let json = {
+        status: 'OK',
+        items: results
+      };
+
+      logger.INFO('[SEARCH] ' + json.items.length + ' results sent');
+      res.send(json);
+    }).limit(parseInt(limit));
+  }
 };
 
 /**
