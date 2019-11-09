@@ -1,6 +1,6 @@
 'use strict';
 module.exports = function(app) {
-var con = require('../controllers/controller');
+const con = require('../controllers/controller');
 
 //GET
 app.route('/').get(con.home);
