@@ -483,13 +483,41 @@ exports.follow = function(req, res) {
     }
 
     if (req.body.follow) {
-      logger.INFO('[FOLLOW] added ' + req.session.user + ' to ' + user.username + "'s follower list");
+      logger.INFO('[FOLLOW] added ' + req.session.user + ' to ' + req.body.username + "'s follower list");
     } else {
-      logger.INFO('[FOLLOW] removed ' + req.session.user + ' to ' + user.username + "'s follower list");
+      logger.INFO('[FOLLOW] removed ' + req.session.user + ' to ' + req.body.username + "'s follower list");
     }
-    
-    res.json({status: 'OK'});
   });
+
+  if (req.body.follow) {
+    var update2 = {$addToSet: {'following': req.body.username}};
+  } else {
+    var update2 = {$pull: {'following': req.body.username}};
+  }
+
+  const filter2 = {'username': req.session.user};
+
+  User.findOneAndUpdate(filter2, update2, function(err, user) {
+    if (err) {
+      logger.ERROR('[FOLLOW] ' + err);
+      res.json({status: 'error', error: 'fatal'});
+      return;
+    } 
+
+    if (user === null) {
+      logger.WARN('[FOLLOW] could not find user');
+      res.json({status: 'error', error: 'could not find user'});
+      return;
+    }
+
+    if (req.body.follow) {
+      logger.INFO('[FOLLOW] added ' + req.body.username + ' to ' + req.session.user + "'s following list");
+    } else {
+      logger.INFO('[FOLLOW] removed ' + req.body.username + ' to ' + req.session.user + "'s following list");
+    }
+  });
+
+  res.json({status: 'OK'});
 };
 
 /**
@@ -509,24 +537,24 @@ exports.following = function(req, res) {
     limit = 100;
   }
 
-  User.find({$text: {$search: req.params.username}}, function(err, results) {
+  const filter = {username: req.params.username};
+
+  User.findOne(filter, function(err, user) {
     if (err) {
       logger.ERROR('[FOLLOWING] ' + err);
       res.json({status: 'error', error: 'fatal'});
       return;
     }
 
-    if (results === null) {
-      logger.WARN('[FOLLOWING] not following anyone');
-      res.json({status: 'error', error: 'not following anyone'});
+    if (user === null) {
+      logger.WARN('[FOLLOWING] user not found');
+      res.json({status: 'error', error: 'user not found'});
       return;
     }
 
-    var following = results.map(item => item.username);
-
-    let json = {
+    const json = {
       status: 'OK',
-      users: following,
+      users: user.following
     };
 
     logger.INFO('[FOLLOWING] ' + json.users.length + ' results sent');

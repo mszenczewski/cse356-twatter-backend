@@ -27,6 +27,10 @@ const UserSchema = new Schema({
     type: Array,
     default: []
   },
+  following: {
+    type: Array,
+    default: []
+  },
 });
 
 UserSchema.index( { followers: 'text' } );
