@@ -325,33 +325,19 @@ exports.user = function(req, res) {
       return;
     }
 
-    User.find({$text: {$search: req.params.username}}, function(err, results) {
-      if (err) {
-        logger.ERROR('[USER] ' + err);
-        res.json({status: 'error', error: 'fatal'});
-        return;
+    const json = {
+      status: 'OK',
+      user: {
+        email: user.email,
+        followers: user.followers.length,
+        following: user.following.length
       }
+    }
 
-      if (results === null) {
-        logger.WARN('[USER] not following anyone');
-        res.json({status: 'error', error: 'not following anyone'});
-        return;
-      }
+    logger.INFO('[FOLLOWING] ' + user.username + ' info sent');
+    logger.DEBUG('[FOLLOWING] ' + JSON.stringify(json, null, 2));
 
-      let json = {
-        status: 'OK',
-        user: {
-          email: user.email,
-          followers: user.followers.length,
-          following: results.length
-        }
-      };
-
-      logger.INFO('[FOLLOWING] ' + user.username + ' info sent');
-      logger.DEBUG('[FOLLOWING] ' + JSON.stringify(json, null, 2));
-
-      res.send(json);
-    });
+    res.send(json);
   });
 };
 
