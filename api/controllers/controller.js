@@ -449,22 +449,25 @@ exports.follow = function(req, res) {
     return;
   }
 
+  if (req.body.follow !== true && req.body.follow !== false) {
+    logger.WARN('[FOLLOW] request rejected, no follow entered');
+    res.json({status: 'error', error: 'no follow entered'});
+    return;
+  }
+
   if (!req.session || !req.session.user) {
     logger.WARN('[FOLLOW] user not logged in');
     res.json({status: 'error', error: 'user not logged in'});
     return;
   }
 
-  const filter = {'username': req.body.username};
-
-  var follow = req.body.follow;
-  if (follow === undefined) follow = true;
-
-  if (follow) {
+  if (req.body.follow) {
     var update = {$addToSet: {'followers': req.session.user}};
   } else {
     var update = {$pull: {'followers': req.session.user}};
   }
+
+  const filter = {'username': req.body.username};
 
   User.findOneAndUpdate(filter, update, function(err, user) {
     if (err) {
@@ -479,12 +482,12 @@ exports.follow = function(req, res) {
       return;
     }
 
-    if (follow) {
+    if (req.body.follow) {
       logger.INFO('[FOLLOW] added ' + req.session.user + ' to ' + user.username + "'s follower list");
     } else {
       logger.INFO('[FOLLOW] removed ' + req.session.user + ' to ' + user.username + "'s follower list");
     }
-
+    
     res.json({status: 'OK'});
   });
 };
