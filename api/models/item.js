@@ -14,9 +14,6 @@ const ItemSchema = new Schema({
       type: String,
     }
   },
-  likes: {
-    type: Number,
-  },
   retweeted: {
     type: Number,
   },
