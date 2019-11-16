@@ -25,7 +25,7 @@ app.use(session({
   activeDuration: 5 * 60 * 1000,
 }));
 
-const routes = require('./api/routes/routes'); 
+const routes = require('./api/routes'); 
 routes(app);
 
 app.listen(8080);
