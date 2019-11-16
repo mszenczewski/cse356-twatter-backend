@@ -6,6 +6,7 @@ const bodyParser = require('body-parser');
 
 require('./api/models/user');
 require('./api/models/item');
+require('./api/models/media');
 
 mongoose.Promise = global.Promise;
 const mongo_url = 'mongodb://192.168.122.16:27017/twatterdb';

@@ -2,6 +2,7 @@
 module.exports = function(app) {
     //GET
     app.route('/').get(require('./controllers/home'));
+    app.route('/media/:id').get(require('./controllers/media'));
     app.route('/item/:id').get(require('./controllers/item'));
     app.route('/user/:username').get(require('./controllers/user'));
     app.route('/user/:username/posts').get(require('./controllers/posts'));
@@ -14,6 +15,7 @@ module.exports = function(app) {
     //POST
     app.route('/adduser').post(require('./controllers/adduser'));
     app.route('/additem').post(require('./controllers/additem'));
+    app.route('/addmedia').post(require('./controllers/addmedia'));
     app.route('/login').post(require('./controllers/login'));
     app.route('/logout').post(require('./controllers/logout'));
     app.route('/verify').post(require('./controllers/verify'));
@@ -23,8 +25,10 @@ module.exports = function(app) {
 
     //DEBUGGING
     app.route('/listallusers').post(require('./debug/listallusers'));
-    app.route('/removeallusers').post(require('./debug/removeallusers'));
     app.route('/listallitems').post(require('./debug/listallitems'));
+    app.route('/listallmedia').post(require('./debug/listallmedia'));
     app.route('/removeallitems').post(require('./debug/removeallitems'));
+    app.route('/removeallusers').post(require('./debug/removeallusers'));
+    app.route('/removeallmedia').post(require('./debug/removeallmedia'));
     app.route('/reset').post(require('./debug/reset'));
 };
