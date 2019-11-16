@@ -22,10 +22,9 @@ module.exports = function(app) {
     app.route('/loggedin').post(require('./controllers/loggedin'));
 
     //DEBUGGING
-    const debug = require('./controllers/debug');
-    app.route('/listallusers').post(debug.listallusers);
-    app.route('/removeallusers').post(debug.removeallusers);
-    app.route('/listallitems').post(debug.listallitems);
-    app.route('/removeallitems').post(debug.removeallitems);
-    app.route('/reset').post(debug.reset);
+    app.route('/listallusers').post(require('./debug/listallusers'));
+    app.route('/removeallusers').post(require('./debug/removeallusers'));
+    app.route('/listallitems').post(require('./debug/listallitems'));
+    app.route('/removeallitems').post(require('./debug/removeallitems'));
+    app.route('/reset').post(require('./debug/reset'));
 };
