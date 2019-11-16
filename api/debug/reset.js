@@ -11,7 +11,6 @@ const logger = require('../logger');
  * Resets the database
  */
 module.exports = function(req, res) {
-  logger.DEBUG('[RESET] received ' + req);
   var error = false;
 
   Item.deleteMany({}, function(err, item) {

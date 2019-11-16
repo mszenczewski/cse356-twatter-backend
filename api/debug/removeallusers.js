@@ -10,7 +10,6 @@ const logger = require('../logger');
  * Removes all users from database
  */
 module.exports = function(req, res) {
-  logger.DEBUG('[REMOVEALLUSERS] received ' + req);
   User.deleteMany({}, function(err) {
     if (err) {
       logger.ERROR('[REMOVEALLUSERS] ' + err);

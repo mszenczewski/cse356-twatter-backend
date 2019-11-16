@@ -10,7 +10,6 @@ const logger = require('../logger');
  * Returns all 'tweets' in the database
  */
 module.exports = function(req, res) {
-  logger.DEBUG('[LISTALLITEMS] received ' + req);
   Item.find({}, function(err, items) {
     if (err) {
       logger.ERROR('[LISTALLITEMS] ' + err);

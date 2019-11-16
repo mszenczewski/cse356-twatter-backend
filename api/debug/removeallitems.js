@@ -10,7 +10,6 @@ const logger = require('../logger');
  * Removes all 'tweets' from database
  */
 module.exports = function(req, res) {
-  logger.DEBUG('[REMOVEALLITEMS] received ' + req);
   Item.deleteMany({}, function(err) {
     if (err) {
       logger.ERROR('[REMOVEALLITEMS]: ' + err);

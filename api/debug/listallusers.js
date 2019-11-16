@@ -10,8 +10,6 @@ const logger = require('../logger');
  * Returns all users in the database
  */
 module.exports = function(req, res) {
-  logger.DEBUG('[LISTALLUSERS] received ' + req);
-
   User.find({}, function(err, users) {
     if (err) {
       logger.ERROR('[LISTALLUSERS] ' + err);
