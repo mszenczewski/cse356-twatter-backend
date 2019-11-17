@@ -11,7 +11,7 @@ const Item = mongoose.model('Items');
  * Searches the database for 'tweets'
  * JSON: {timestamp:, limit:, q:, username:, following:} 
  */
-module.exports = function(req, res) {
+module.exports = async function(req, res) {
   logger.DEBUG('[SEARCH] received: ' + JSON.stringify(req.body, null, 2));
 
   const options = {};
@@ -44,19 +44,16 @@ module.exports = function(req, res) {
     options.username = req.body.username;
   }
 
-  if(req.body.following === true) {
-    if (!req.session || !req.session.user) {
+  if(req.body.following === true && (!req.session || !req.session.user)) {
       logger.WARN('[SEARCH] user not logged in');
       res.json({status: 'error', error: 'user not logged in'});
       return;
-    }
+  }
 
-    User.findOne({username: req.session.user}, function(err, user) {
-      if (err) {
-        logger.ERROR('[SEARCH] ' + err);
-        res.json({status: 'error', error: 'fatal'});
-        return;
-      } 
+  try {
+    //FOLLOWING
+    if (req.body.following === true) {
+      const user = await User.findOne({username: req.session.user});
 
       if (req.body.username && user.following.indexOf(req.body.username) === -1) {
         logger.WARN('[SEARCH] searched for user not in following list');
@@ -67,40 +64,24 @@ module.exports = function(req, res) {
       if (!req.body.username) {
         options.username = { $in: user.following };
       }
+    }
 
-      logger.DEBUG('[SEARCH] options: ' + JSON.stringify(options, null, 2));
-
-      Item.find(options, function(err, results) {
-        if (err) {
-          logger.ERROR('[SEARCH] ' + err);
-          res.json({status: 'error', error: 'fatal'});
-        }
-        
-        let json = {
-          status: 'OK',
-          items: results
-        };
-
-        logger.INFO('[SEARCH] ' + json.items.length + ' results sent');
-        res.send(json);
-      }).limit(parseInt(limit));
-    });
-  } else {
     logger.DEBUG('[SEARCH] options: ' + JSON.stringify(options, null, 2));
 
-    Item.find(options, function(err, results) {
-      if (err) {
-        logger.ERROR('[SEARCH] ' + err);
-        res.json({status: 'error', error: 'fatal'});
-      }
-      
-      let json = {
-        status: 'OK',
-        items: results
-      };
+    const results = await Item.find(options).limit(parseInt(limit));
 
-      logger.INFO('[SEARCH] ' + json.items.length + ' results sent');
-      res.send(json);
-    }).limit(parseInt(limit));
+    let json = {
+      status: 'OK',
+      items: results
+    };
+
+    logger.INFO('[SEARCH] ' + json.items.length + ' results sent');
+    res.send(json);
+    return;
+
+  } catch (err) {
+    logger.ERROR('[SEARCH] ' + err);
+    res.json({status: 'error', error: 'fatal'});
+    return;
   }
 };
