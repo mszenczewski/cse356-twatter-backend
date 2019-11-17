@@ -21,7 +21,7 @@ const ItemSchema = new Schema({
     type: String
   },
   timestamp: {
-    type: String
+    type: Number
   },
   parent: {
     type: String
