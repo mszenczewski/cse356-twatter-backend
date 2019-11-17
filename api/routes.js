@@ -22,6 +22,7 @@ module.exports = function(app) {
     app.route('/search').post(require('./controllers/search'));
     app.route('/follow').post(require('./controllers/follow'));
     app.route('/loggedin').post(require('./controllers/loggedin'));
+    app.route('/item/:id/like').post(require('./controllers/like'));
 
     //DEBUGGING
     app.route('/listallusers').post(require('./debug/listallusers'));

@@ -31,6 +31,10 @@ const UserSchema = new Schema({
     type: Array,
     default: []
   },
+  liked: {
+    type: Array,
+    default: [] 
+  }
 });
 
 module.exports = mongoose.model('Users', UserSchema);
