@@ -1,9 +1,9 @@
 'use strict';
 
 const logger = require('../logger');
-
-const mongoose = require('mongoose');
-const Item = mongoose.model('Items');
+const mongoose = require('mongoose'),
+  Item = mongoose.model('Items'),
+  Media = mongoose.model('Media');
 
 /**
  * DELETE 
@@ -37,6 +37,11 @@ module.exports = async function(req, res) {
       logger.WARN('[DELETE]: user not authorized to delete this item');
       res.status(403).json({status: 'error', error: 'user not authorized to delete this item'});
       return;
+    }
+
+    if (item.media) {
+      const results = await Media.deleteMany({id: {$in: item.media}});
+      logger.INFO('[DELETE] ' + results + ' removed');
     }
 
     await Item.deleteOne({id: req.params.id});
