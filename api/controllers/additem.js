@@ -28,7 +28,10 @@ module.exports = async function(req, res) {
 
   if (req.body.childType === 'retweet') {
     try {
-      await Item.findOneAndUpdate({id: req.body.parent});
+      await Item.findOneAndUpdate({id: req.body.parent}, {$inc: {retweeted: 1}});
+      logger.INFO(`[ADDITEM] ${req.body.parent} retweeted by ${req.session.user}`);
+      res.json({status: 'OK'});
+      return;
     } catch (err) {
       logger.ERROR('[ADDITEM] ' + err);
       res.json({status: 'error', error: 'fatal'});
@@ -66,6 +69,10 @@ module.exports = async function(req, res) {
     content: req.body.content,
     timestamp: Date.now() / 1000,
   };
+
+  if (req.body.parent) {
+    temp.parent = req.body.parent;
+  }
 
   try {
     const item = await Item.create(temp);

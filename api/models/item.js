@@ -4,25 +4,28 @@ const Schema = mongoose.Schema;
 
 const ItemSchema = new Schema({
   id: {
-    type: String,
+    type: String
   },
   username: {
-    type: String,
+    type: String
   },
   property: {
     likes: {
-      type: String,
+      type: String
     }
   },
   retweeted: {
-    type: Number,
+    type: Number
   },
   content: {
-    type: String,
+    type: String
   },
   timestamp: {
-    type: String,
+    type: String
   },
+  parent: {
+    type: String
+  }
 });
 
 ItemSchema.index( { content: 'text' , id: 'text'} );
