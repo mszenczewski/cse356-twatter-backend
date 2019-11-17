@@ -6,13 +6,11 @@ const MediaSchema = new Schema({
   id: {
     type: String,
   },
-  by: {
-    username: {
-      type: String,
-    },
-    tweetid: {
-      type: String,
-    }
+  username: {
+    type: String,
+  },
+  tweetid: {
+    type: String,
   },
   content: {
     contentType: String,
@@ -20,6 +18,6 @@ const MediaSchema = new Schema({
   },
 });
 
-// MediaSchema.index( {id: 'text'} );
+MediaSchema.index( {id: 'text'} );
 
 module.exports = mongoose.model('Media', MediaSchema);

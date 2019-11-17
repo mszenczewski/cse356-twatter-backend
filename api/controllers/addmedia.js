@@ -35,7 +35,8 @@ module.exports = function(req, res) {
     }
 
     media.id = Math.floor(Math.random() * Math.floor(100000));
-    media.by = {};
+    media.username = req.session.user;
+    media.tweetid = null;
 
     media.save(function(err, media) {
       if (err) {
