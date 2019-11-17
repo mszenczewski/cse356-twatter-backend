@@ -28,6 +28,9 @@ const ItemSchema = new Schema({
   },
   media: {
     type: Array
+  },
+  childType: {
+    type: String
   }
 });
 

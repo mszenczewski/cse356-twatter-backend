@@ -34,7 +34,7 @@ module.exports = async function(req, res) {
     limit = 100;
   }
 
-  //Q
+  //QUERY
   if (req.body.q) {
     options.$text = {$search: req.body.q};
   }
@@ -44,15 +44,30 @@ module.exports = async function(req, res) {
     options.username = req.body.username;
   }
 
-  if(req.body.following === true && (!req.session || !req.session.user)) {
-      logger.WARN('[SEARCH] user not logged in');
-      res.json({status: 'error', error: 'user not logged in'});
-      return;
+  //PARENT
+  if (req.body.parent) {
+    options.parent = req.body.parent;
   }
 
-  try {
-    //FOLLOWING
-    if (req.body.following === true) {
+  //HASMEDIA
+  if (req.body.hasMedia === true) {
+    options.media = {$exists: true, $not: {$size: 0}};
+  }
+
+  //REPLIES
+  if (req.body.replies === false) {
+    options.childType = {$ne: 'reply'};
+  }
+
+  //FOLLOWING
+  if (req.body.following === true) {
+    if (!req.session || !req.session.user) {
+        logger.WARN('[SEARCH] user not logged in');
+        res.json({status: 'error', error: 'user not logged in'});
+        return;
+    }
+
+    try {
       const user = await User.findOne({username: req.session.user});
 
       if (req.body.username && user.following.indexOf(req.body.username) === -1) {
@@ -64,24 +79,35 @@ module.exports = async function(req, res) {
       if (!req.body.username) {
         options.username = { $in: user.following };
       }
+    } catch (err) {
+      logger.ERROR('[SEARCH] ' + err);
+      res.json({status: 'error', error: 'fatal'});
     }
+  }
 
+  //SEARCH
+  try {
     logger.DEBUG('[SEARCH] options: ' + JSON.stringify(options, null, 2));
 
-    const results = await Item.find(options).limit(parseInt(limit));
+    var results = await Item.find(options).limit(parseInt(limit));
 
-    let json = {
-      status: 'OK',
-      items: results
-    };
+    //SORTING
+    switch(req.body.rank) {
+      case 'time':
+        results.sort((a, b) => b.timestamp - a.timestamp);
+        break;
+      case 'interest':
+      default:
+        results.sort((a, b) => (b.property.likes + b.retweeted) - (a.property.likes + a.retweeted));
+    }
 
+    let json = {status: 'OK', items: results};
+    
     logger.INFO('[SEARCH] ' + json.items.length + ' results sent');
-    res.send(json);
-    return;
 
+    res.send(json);
   } catch (err) {
     logger.ERROR('[SEARCH] ' + err);
     res.json({status: 'error', error: 'fatal'});
-    return;
   }
 };
