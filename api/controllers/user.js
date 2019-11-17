@@ -21,7 +21,7 @@ module.exports = function(req, res) {
 
     if (user === null) {
       logger.WARN('[USER] user not found');
-      res.json({status: 'error', error: 'user not found'});
+      res.status(404).json({status: 'error', error: 'user not found'});
       return;
     }
 

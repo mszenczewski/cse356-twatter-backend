@@ -21,7 +21,7 @@ module.exports = function(req, res) {
 
     if (item === null) {
       logger.WARN('[ITEM] item not found');
-      res.json({status: 'error', error: 'item not found'});
+      res.status(404).json({status: 'error', error: 'item not found'});
       return;
     }
 
