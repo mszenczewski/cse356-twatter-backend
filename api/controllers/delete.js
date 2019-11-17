@@ -9,7 +9,7 @@ const Item = mongoose.model('Items');
  * DELETE 
  * Removes a 'tweet' from database
  */
-module.exports = function(req, res) {
+module.exports = async function(req, res) {
   logger.DEBUG('[DELETE] received: ' + JSON.stringify(req.params));
 
   if (!req.session || !req.session.user) {
@@ -18,12 +18,8 @@ module.exports = function(req, res) {
     return;
   }
 
-  Item.findOne({'id': req.params.id}, function(err, item) {
-    if (err) {
-      logger.ERROR('[DELETE]: ' + err);
-      res.status(500).json({status: 'error', error: 'fatal'});
-      return;
-    }
+  try {
+    const item = await Item.findOne({'id': req.params.id});
 
     if (item === null) {
       logger.ERROR('[WARN]: item not found');
@@ -37,14 +33,19 @@ module.exports = function(req, res) {
       return;
     }
 
-    Item.deleteOne({id: req.params.id}, function(err, item) {
-      if (err) {
-        logger.ERROR('[DELETE]: ' + err);
-        res.status(500).json({status: 'error', error: 'fatal'});
-        return;
-      }
-      logger.INFO('[DELETE] ' + req.params.id + ' removed');
-      res.status(200).json({status: 'OK'});
-    });
-  });
+    if (item.username !== req.session.user) {
+      logger.WARN('[DELETE]: user not authorized to delete this item');
+      res.status(403).json({status: 'error', error: 'user not authorized to delete this item'});
+      return;
+    }
+
+    await Item.deleteOne({id: req.params.id});
+
+    logger.INFO('[DELETE] ' + req.params.id + ' removed');
+    res.status(200).json({status: 'OK'});
+
+  } catch (err) {
+    logger.ERROR('[DELETE]: ' + err);
+    res.status(500).json({status: 'error', error: 'fatal'});
+  }
 };
