@@ -1,39 +1,24 @@
 'use strict';
 
-const mongoose = require('mongoose');
-const User = mongoose.model('Users');
-const Item = mongoose.model('Items');
-
 const logger = require('../logger');
+const mongoose = require('mongoose'),
+  User = mongoose.model('Users'),
+  Item = mongoose.model('Items'),
+  Media = mongoose.model('Items');
 
 /**
  * RESET 
  * Resets the database
  */
-module.exports = function(req, res) {
-  var error = false;
-
-  Item.deleteMany({}, function(err, item) {
-    if (err) {
-      logger.ERROR('[RESET]: ' + err);
-      error = true;
-    } else {
-      logger.INFO('[RESET] all items removed');
-    }
-  });
-
-  User.deleteMany({}, function(err, user) {
-    if (err) {
-      logger.ERROR('[RESET]: ' + err);
-      error = true;
-    } else {
-      logger.INFO('[RESET] all users removed');
-    }
-  });
-
-  if (error === true) {
-    res.json({status: 'error', error: 'fatal'});
-  } else {
+module.exports = async function(req, res) {
+  try {
+    await Item.deleteMany({});
+    await User.deleteMany({});
+    await Media.deleteMany({});
+    logger.INFO('[RESET] database reset');
     res.json({status: 'OK'});
+  } catch (err) {
+    logger.ERROR('[RESET]: ' + err);
+    res.json({status: 'error', error: 'fatal'});
   }
 };

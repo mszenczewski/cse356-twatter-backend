@@ -1,21 +1,19 @@
 'use strict';
 
-const mongoose = require('mongoose');
-const User = mongoose.model('Users');
-
 const logger = require('../logger');
+const mongoose = require('mongoose'),
+  User = mongoose.model('Users');
 
 /**
  * LIST ALL USERS 
  * Returns all users in the database
  */
-module.exports = function(req, res) {
-  User.find({}, function(err, users) {
-    if (err) {
-      logger.ERROR('[LISTALLUSERS] ' + err);
-      res.json({status: 'error', error: 'fatal'});
-      return;
-    }
-    res.json(users);
-  });
+module.exports = async function(req, res) {
+  try {
+    const results = await User.find({});
+    res.json(results);
+  } catch (err) {
+    logger.ERROR('[LISTALLUSERS] ' + err);
+    res.json({status: 'error'});
+  }
 };

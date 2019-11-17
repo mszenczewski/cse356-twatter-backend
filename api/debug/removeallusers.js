@@ -1,22 +1,20 @@
 'use strict';
 
-const mongoose = require('mongoose');
-const User = mongoose.model('Users');
-
 const logger = require('../logger');
+const mongoose = require('mongoose'),
+  User = mongoose.model('Users');
 
 /**
  * REMOVE ALL USERS 
  * Removes all users from database
  */
-module.exports = function(req, res) {
-  User.deleteMany({}, function(err) {
-    if (err) {
-      logger.ERROR('[REMOVEALLUSERS] ' + err);
-      res.json({status: 'error'});
-    } else {
-      logger.INFO('[REMOVEALLUSERS] all users removed');
-      res.json({status: 'OK'});
-    }  
-  });
+module.exports = async function(req, res) {
+  try {
+    await User.deleteMany({});
+    logger.INFO('[REMOVEALLUSERS] all users removed');
+    res.json({status: 'OK'});
+  } catch (err) {
+    logger.ERROR('[REMOVEALLUSERS] ' + err);
+    res.json({status: 'error'});
+  }
 };

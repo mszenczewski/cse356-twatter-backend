@@ -8,14 +8,13 @@ const mongoose = require('mongoose'),
  * REMOVE ALL MEDIA 
  * Removes all media from database
  */
-module.exports = function(req, res) {
-  Media.deleteMany({}, function(err) {
-    if (err) {
-      logger.ERROR('[REMOVEALLMEDIA]: ' + err);
-      res.json({status: 'error', error: 'fatal'});
-      return;
-    }
+module.exports = async function(req, res) {
+  try {
+    await Media.deleteMany({});
     logger.INFO('[REMOVEALLMEDIA] all media removed');
     res.json({status: 'OK'});
-  });
+  } catch (err) {
+    logger.ERROR('[REMOVEALLMEDIA] ' + err);
+    res.json({status: 'error'});
+  }
 };
