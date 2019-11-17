@@ -6,11 +6,13 @@ const MediaSchema = new Schema({
   id: {
     type: String,
   },
-  username: {
-    type: String,
-  },
-  tweetid: {
-    type: String,
+  by: {
+    username: {
+      type: String,
+    },
+    tweetid: {
+      type: String,
+    }
   },
   content: {
     contentType: String,
