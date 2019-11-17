@@ -11,7 +11,7 @@ const ItemSchema = new Schema({
   },
   property: {
     likes: {
-      type: String
+      type: Number
     }
   },
   retweeted: {
@@ -25,6 +25,9 @@ const ItemSchema = new Schema({
   },
   parent: {
     type: String
+  },
+  media: {
+    type: Array
   }
 });
 

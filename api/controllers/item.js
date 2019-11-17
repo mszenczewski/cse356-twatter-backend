@@ -34,6 +34,8 @@ module.exports = function(req, res) {
         property: item.property,
         retweeted: item.retweeted,
         timestamp: item.timestamp,
+        parent: item.parent,
+        media: item.media
         }
     };
 

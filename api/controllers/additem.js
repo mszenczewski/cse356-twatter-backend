@@ -67,11 +67,15 @@ module.exports = async function(req, res) {
     property: {likes: 0},
     retweeted: 0,
     content: req.body.content,
-    timestamp: Date.now() / 1000,
+    timestamp: Date.now() / 1000
   };
 
   if (req.body.parent) {
     temp.parent = req.body.parent;
+  }
+
+  if (req.body.media) {
+    temp.media = req.body.media;
   }
 
   try {
