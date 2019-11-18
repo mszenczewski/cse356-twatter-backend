@@ -23,7 +23,7 @@ module.exports = async function(req, res) {
 
     if (item === null) {
       logger.ERROR('[WARN]: item not found');
-      res.status(500).json({status: 'error', error: 'item not found'});
+      res.status(404).json({status: 'error', error: 'item not found'});
       return;
     }
 

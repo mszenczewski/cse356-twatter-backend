@@ -33,18 +33,13 @@ module.exports = async function(req, res) {
     return;
   }
 
-  const data = {
-    username: req.body.username,
-    email: req.body.email,
-    password: req.body.password,
-    key: Math.floor(Math.random() * Math.floor(100000))
-  };
+  const random_key = Math.floor(Math.random() * Math.floor(100000));
 
   const mail_options = {
     from: 'cse356szen@gmail.com',
     to: req.body.email,
     subject: 'verification email',
-    text: 'validation key: <' + data.key + '>'
+    text: 'validation key: <' + random_key + '>'
   };
 
   const transporter = nodemailer.createTransport({
@@ -59,14 +54,25 @@ module.exports = async function(req, res) {
 
   try {
     //ADD USER
-    const user = await User.findOneAndUpdate({'username': req.body.username}, data, {upsert:true});
+    const u = await User.findOne({'username': req.body.username});
 
-    if (user !== null) {
+    if (u !== null) {
       logger.WARN('[ADDUSER] user already exists');
       res.status(400).json({status: 'error', error: 'user already exists'});
       return;
     }
+
+    const user = new User();
+
+    user.username = req.body.username;
+    user.email = req.body.email;
+    user.password = req.body.password;
+    user.key = random_key;
+
+    await user.save();
+
     logger.INFO('[ADDUSER] added ' + req.body.username + ' to database');
+    logger.DEBUG('[ADDUSER] user: ' + JSON.stringify(user, null, 2));
 
     //SEND EMAIL
     const info = await transporter.sendMail(mail_options);
@@ -81,7 +87,8 @@ module.exports = async function(req, res) {
     }
 
     logger.INFO('[ADDUSER] email sent to ' + mail_options.to);
-    res.json({status: 'OK'});
+
+    res.status(200).json({status: 'OK'});
 
   } catch (err) {
       logger.ERROR('[ADDUSER] ' + err);

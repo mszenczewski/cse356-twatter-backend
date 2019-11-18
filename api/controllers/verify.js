@@ -34,19 +34,23 @@ module.exports = async function(req, res) {
       return;
     }
 
-    if(user.key !== req.body.key && req.body.key !== 'abracadabra'){
+    if(user.verified === true) {
+      logger.WARN('[VERIFY] email already verified');
+      res.status(400).json({status: 'error', error: 'email already verified'});
+      return;
+    }
+
+    if(user.key != req.body.key && req.body.key !== 'abracadabra'){
       logger.WARN('[VERIFY] incorrect key');
       res.status(403).json({status: 'error', error: 'incorrect key'});
       return;
     }
 
     user.verified = true;
-
     await user.save();
 
     logger.INFO('[VERIFY] ' + user.email + ' verified');
-    res.json({status: 'OK'});
-
+    res.status(200).json({status: 'OK'});
   } catch (err) {
     logger.ERROR('[VERIFY] ' + err);
     res.status(500).json({status: 'error', error: 'fatal'}); 
