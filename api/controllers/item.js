@@ -15,7 +15,7 @@ module.exports = function(req, res) {
   Item.findOne({'id': req.params.id}, function(err, item) {
     if (err) {
       logger.ERROR('[ITEM] ' + err);
-      res.json({status: 'error', error: 'fatal'});
+      res.status(500).json({status: 'error', error: 'fatal'});
       return;
     }
 
@@ -40,6 +40,6 @@ module.exports = function(req, res) {
     };
 
     logger.INFO('[ITEM] ' + item.id + ' found');
-    res.send(json);
+    res.status(200).send(json);
   });
 };
