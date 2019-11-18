@@ -13,7 +13,7 @@ const mongoose = require('mongoose'),
 module.exports = function(req, res) {
   if (!req.session || !req.session.user) {
     logger.WARN('[ADDMEDIA] user not logged in');
-    res.json({status: 'error', error: 'user not logged in'});
+    res.status(403).json({status: 'error', error: 'user not logged in'});
     return;
   }
 
@@ -43,12 +43,12 @@ module.exports = function(req, res) {
     media.save(function(err, media) {
       if (err) {
         logger.ERROR('[ADDMEDIA] ' + err);
-        res.json({status: 'error', error: 'fatal'});
+        res.status(500).json({status: 'error', error: 'fatal'});
         return;
       }
 
       logger.INFO('[ADDMEDIA] media ' + media.id + ' added');
-      res.json({status: 'OK', id: media.id});
+      res.status(200).json({status: 'OK', id: media.id});
     });
   });
 };
