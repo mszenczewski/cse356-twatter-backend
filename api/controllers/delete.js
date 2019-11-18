@@ -40,8 +40,8 @@ module.exports = async function(req, res) {
     }
 
     if (item.media) {
-      const results = await Media.deleteMany({id: {$in: item.media}});
-      logger.INFO('[DELETE] ' + results + ' removed');
+      await Media.deleteMany({id: {$in: item.media}});
+      logger.INFO('[DELETE] media ' + item.media + ' removed');
     }
 
     await Item.deleteOne({id: req.params.id});
