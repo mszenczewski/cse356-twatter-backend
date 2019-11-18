@@ -16,13 +16,13 @@ module.exports = async function(req, res) {
 
   if (!req.session || !req.session.user) {
     logger.WARN('[ADDITEM] user not logged in');
-    res.json({status: 'error', error: 'user not logged in'});
+    res.status(403).json({status: 'error', error: 'user not logged in'});
     return;
   }
 
   if (!req.body.content) { 
     logger.WARN('[ADDITEM] no content');
-    res.json({status: 'error', error: 'no content'});
+    res.status(400).json({status: 'error', error: 'no content'});
     return;
   }
 
@@ -30,11 +30,11 @@ module.exports = async function(req, res) {
     try {
       await Item.findOneAndUpdate({id: req.body.parent}, {$inc: {retweeted: 1}});
       logger.INFO(`[ADDITEM] ${req.body.parent} retweeted by ${req.session.user}`);
-      res.json({status: 'OK'});
+      res.status(200).json({status: 'OK'});
       return;
     } catch (err) {
       logger.ERROR('[ADDITEM] ' + err);
-      res.json({status: 'error', error: 'fatal'});
+      res.status(500).json({status: 'error', error: 'fatal'});
       return;
     }
   }
@@ -45,18 +45,18 @@ module.exports = async function(req, res) {
       for (var i = 0; i < results.length; i++) {
         if (results[i].by.tweetid !== null) {
           logger.WARN('[ADDITEM] media already has a tweet associated with it');
-          res.json({status: 'error', error: 'media already has a tweet associated with it'});
+          res.status(403).json({status: 'error', error: 'media already has a tweet associated with it'});
           return;
         } 
         if (results[i].by.username !== req.session.user) {
           logger.WARN('[ADDITEM] media does not belong to user');
-          res.json({status: 'error', error: 'media does not belong to user'});
+          res.status(403).json({status: 'error', error: 'media does not belong to user'});
           return;
         } 
       }
     } catch (err) {
       logger.ERROR('[ADDITEM] ' + err);
-      res.json({status: 'error', error: 'fatal'});
+      res.status(500).json({status: 'error', error: 'fatal'});
       return;
     }
   }
@@ -83,11 +83,11 @@ module.exports = async function(req, res) {
     const item = await Item.create(temp);
     await Media.findOneAndUpdate({id: req.body.media}, {'by.tweetid': item.id});
     logger.INFO('[ADDITEM] item ' + item.id + ' added');
-    res.json({status: 'OK', id: item.id});
+    res.status(200).json({status: 'OK', id: item.id});
     return;
   } catch (err) {
     logger.ERROR('[ADDITEM] ' + err);
-    res.json({status: 'error', error: 'fatal'});
+    res.status(500).json({status: 'error', error: 'fatal'});
     return;
   }  
 };
