@@ -10,82 +10,74 @@ const User = mongoose.model('Users');
  * Follows another user
  * JSON: {username:, follow: } 
  */
-module.exports = function(req, res) {
+module.exports = async function(req, res) {
   logger.DEBUG('[FOLLOW] received: ' + JSON.stringify(req.body, null, 2));
 
   if (req.body.username === '') {
     logger.WARN('[FOLLOW] request rejected, no username entered');
-    res.json({status: 'error', error: 'no username entered'});
+    res.status(400).json({status: 'error', error: 'no username entered'});
     return;
   }
 
   if (req.body.follow !== true && req.body.follow !== false) {
     logger.WARN('[FOLLOW] request rejected, no follow entered');
-    res.json({status: 'error', error: 'no follow entered'});
+    res.status(400).json({status: 'error', error: 'no follow entered'});
     return;
   }
 
   if (!req.session || !req.session.user) {
     logger.WARN('[FOLLOW] user not logged in');
-    res.json({status: 'error', error: 'user not logged in'});
+    res.status(403).json({status: 'error', error: 'user not logged in'});
     return;
   }
 
-  if (req.body.follow) {
-    var update = {$addToSet: {'followers': req.session.user}};
-  } else {
-    var update = {$pull: {'followers': req.session.user}};
-  }
+  try {
+    const target = await User.findOne({'username': req.body.username});
 
-  const filter = {'username': req.body.username};
-
-  User.findOneAndUpdate(filter, update, function(err, user) {
-    if (err) {
-      logger.ERROR('[FOLLOW] ' + err);
-      res.json({status: 'error', error: 'fatal'});
-      return;
-    } 
-
-    if (user === null) {
+    if (target === null) {
       logger.WARN('[FOLLOW] could not find user');
-      res.json({status: 'error', error: 'could not find user'});
+      res.status(404).json({status: 'error', error: 'could not find user'});
       return;
     }
+
+    if (req.body.follow && target.followers.indexOf(req.session.user) !== -1) {
+      logger.WARN('[FOLLOW] already follow user');
+      res.status(400).json({status: 'error', error: 'already follow user'});
+      return;
+    }
+
+    if (!req.body.follow && target.followers.indexOf(req.session.user) === -1) {
+      logger.WARN('[FOLLOW] not following user');
+      res.status(400).json({status: 'error', error: 'not following user'});
+      return;
+    }
+
+    const me = await User.findOne({'username': req.session.user});
 
     if (req.body.follow) {
-      logger.INFO('[FOLLOW] added ' + req.session.user + ' to ' + req.body.username + "'s follower list");
-    } else {
-      logger.INFO('[FOLLOW] removed ' + req.session.user + ' to ' + req.body.username + "'s follower list");
-    }
-  });
+      target.followers.push(req.session.user);
+      await target.save();
+      logger.INFO(`[FOLLOW] added ${req.session.user} to ${target.username}'s follower list`);
 
-  if (req.body.follow) {
-    var update2 = {$addToSet: {'following': req.body.username}};
-  } else {
-    var update2 = {$pull: {'following': req.body.username}};
+      me.following.push(target.username);
+      await me.save();
+      logger.INFO(`[FOLLOW] added ${target.username} to ${me.username}'s following list`);
+
+      res.status(200).json({status: 'OK'});
+    } else {
+      target.followers.splice(target.followers.indexOf(req.session.user), 1);
+      await target.save();
+      logger.INFO(`[FOLLOW] removed ${req.session.user} from ${target.username}'s follower list`);
+
+      me.following.splice(me.following.indexOf(target.username), 1);
+      await me.save();
+      logger.INFO(`[FOLLOW] removed ${target.username} from ${me.username}'s following list`);
+
+      res.status(200).json({status: 'OK'});
+    }
+  } catch (err) {
+    logger.ERROR('[FOLLOW] ' + err);
+    res.status(500).json({status: 'error', error: 'fatal'});
+    return;
   }
-
-  const filter2 = {'username': req.session.user};
-
-  User.findOneAndUpdate(filter2, update2, function(err, user) {
-    if (err) {
-      logger.ERROR('[FOLLOW] ' + err);
-      res.json({status: 'error', error: 'fatal'});
-      return;
-    } 
-
-    if (user === null) {
-      logger.WARN('[FOLLOW] could not find user');
-      res.json({status: 'error', error: 'could not find user'});
-      return;
-    }
-
-    if (req.body.follow) {
-      logger.INFO('[FOLLOW] added ' + req.body.username + ' to ' + req.session.user + "'s following list");
-    } else {
-      logger.INFO('[FOLLOW] removed ' + req.body.username + ' to ' + req.session.user + "'s following list");
-    }
-  });
-
-  res.json({status: 'OK'});
 };
