@@ -36,20 +36,17 @@ module.exports = async function(req, res) {
   const random_key = Math.floor(Math.random() * Math.floor(100000));
 
   const mail_options = {
-    from: 'cse356szen@gmail.com',
+    from: 'no-reply@gaillardia.cse356.compas.cs.stonybrook.edu',
     to: req.body.email,
     subject: 'verification email',
     text: 'validation key: <' + random_key + '>'
   };
 
   const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true,
-    auth: {
-      user: 'cse356szen@gmail.com',
-      pass: 'chopitup'
-    }
+    host: 'localhost',
+    port: 2525,
+    secure: false,
+    tls:{rejectUnauthorized: false}
   });
 
   try {
@@ -78,9 +75,9 @@ module.exports = async function(req, res) {
     const info = await transporter.sendMail(mail_options);
 
     const tmp = info.response.split(' ');
-    const code = tmp[2];
+    const code = tmp[0];
 
-    if (code !== 'OK' ) {
+    if (code.charAt(0) != 2 ) {
       logger.ERROR('[ADDUSER] ' + JSON.stringify(info, null, 2));
       res.status(500).json({status: 'error', error: 'fatal'});
       return;
