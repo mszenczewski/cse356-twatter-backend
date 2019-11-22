@@ -29,4 +29,11 @@ app.use(session({
 const routes = require('./api/routes'); 
 routes(app);
 
-app.listen(8080);
+if (isNaN(process.argv[3])) {
+  console.log('**** FAILED TO SET PORT ****');
+  process.exit(1);  
+}
+
+const port = process.argv[3]
+app.listen(port);
+console.log(`**** listening on port ${port} ****`);
