@@ -34,7 +34,7 @@ module.exports = async function(req, res) {
       return;
     } catch (err) {
       logger.ERROR('[ADDITEM] ' + err);
-      res.status(500).json({status: 'error', error: 'fatal'});
+      // res.status(500).json({status: 'error', error: 'fatal'});
       return;
     }
   }
@@ -56,10 +56,12 @@ module.exports = async function(req, res) {
       }
     } catch (err) {
       logger.ERROR('[ADDITEM] ' + err);
-      res.status(500).json({status: 'error', error: 'fatal'});
+      // res.status(500).json({status: 'error', error: 'fatal'});
       return;
     }
   }
+
+  res.status(200).json({status: 'OK', id: item.id});
 
   const temp = {
     id: Math.floor(Math.random() * Math.floor(100000)),
@@ -83,11 +85,10 @@ module.exports = async function(req, res) {
     const item = await Item.create(temp);
     await Media.findOneAndUpdate({id: req.body.media}, {'by.tweetid': item.id});
     logger.INFO('[ADDITEM] item ' + item.id + ' added');
-    res.status(200).json({status: 'OK', id: item.id});
     return;
   } catch (err) {
     logger.ERROR('[ADDITEM] ' + err);
-    res.status(500).json({status: 'error', error: 'fatal'});
+    // res.status(500).json({status: 'error', error: 'fatal'});
     return;
   }  
 };
