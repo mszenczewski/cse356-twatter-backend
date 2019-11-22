@@ -15,8 +15,12 @@ const daily_rotate_file_transport = new transports.DailyRotateFile
   datePattern: 'YYYY-MM-DD'
 });
 
+var log_level = process.argv[2].toUpperCase();
+
+console.log(`** logging in ${log_level} mode **`);
+
 module.exports = createLogger({
-  level: 'INFO',
+  level: log_level,
   levels: { 
     ERROR: 0,
     WARN: 1,
