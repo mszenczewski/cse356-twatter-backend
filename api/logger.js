@@ -15,28 +15,8 @@ const daily_rotate_file_transport = new transports.DailyRotateFile
   datePattern: 'YYYY-MM-DD'
 });
 
-switch(process.argv[2]) {
-  case 'error':
-    var log_level = process.argv[2].toUpperCase();
-    break;
-  case 'warn':
-    var log_level = process.argv[2].toUpperCase();
-    break;
-  case 'info':
-    var log_level = process.argv[2].toUpperCase();
-    break;
-  case 'debug':
-    var log_level = process.argv[2].toUpperCase();
-    break;
-  default:
-    console.log('**** DID NOT SET DEBUG LEVEL ****');
-    process.exit(1);  
-}
-
-console.log(`**** logging in ${log_level} mode ****`);
-
 module.exports = createLogger({
-  level: log_level,
+  level: args[0],
   levels: { 
     ERROR: 0,
     WARN: 1,

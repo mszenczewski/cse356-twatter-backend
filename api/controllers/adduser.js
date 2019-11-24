@@ -43,7 +43,7 @@ module.exports = async function(req, res) {
   };
 
   const transporter = nodemailer.createTransport({
-    host: '192.168.122.39',
+    host: args[3],
     port: 2525,
     secure: false,
     tls:{rejectUnauthorized: false}
