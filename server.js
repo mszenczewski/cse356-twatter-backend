@@ -1,38 +1,37 @@
-args = process.argv.slice(2);
+argv = require('minimist')(process.argv.slice(2));
 
-switch(args[0]) {
-  case 'error':
-  case 'warn':
-  case 'info':
-  case 'debug':
+switch(argv.log) {
+  case 'ERROR':
+  case 'WARN':
+  case 'INFO':
+  case 'DEBUG':
     break;
   default:
-    console.log('**** DID NOT SET DEBUG LEVEL ****');
+    console.log('**** INCORRECT LOG LEVEL ****');
     process.exit(1);  
 }
 
-console.log(`[args] logging in ${args[0]} mode`);
-args[0] = args[0].toUpperCase();
+console.log(`[args] logging in ${argv.log} mode`);
 
-if (isNaN(args[1])) {
-  console.log('**** FAILED TO SET PORT ****');
+if (isNaN(argv.port)) {
+  console.log('**** INCORRECT PORT ****');
   process.exit(1);  
 } else {
-  console.log(`[args] listening on port ${args[1]}`);
+  console.log(`[args] listening on port ${argv.port}`);
 }
 
-if (!args[2] || args[2].substring(0,8) != '192.168.') {
-  console.log('**** DID NOT SET MONGODB IP ADDRESS ****');
+if (!argv.mongo || argv.mongo.substring(0,8) != '192.168.') {
+  console.log('**** INCORRECT MONGODB IP ADDRESS ****');
   process.exit(1);  
 } else {
-  console.log(`[args] using ${args[2]} as mongo server`);
+  console.log(`[args] using ${argv.mongo} as mongo server`);
 }
 
-if (!args[3] || args[3].substring(0,8) != '192.168.') {
-  console.log('**** DID NOT SET MAIL IP ADDRESS ****');
+if (!argv.mail || argv.mail.substring(0,8) != '192.168.') {
+  console.log('**** INCORRECT MAIL IP ADDRESS ****');
   process.exit(1);  
 } else {
-  console.log(`[args] using ${args[2]} as mail server`);
+  console.log(`[args] using ${argv.mail} as mail server`);
 }
 
 const express = require('express');
@@ -46,7 +45,7 @@ require('./api/models/item');
 require('./api/models/media');
 
 mongoose.Promise = global.Promise;
-const mongo_url = `mongodb://${args[2]}:27017/twatterdb`;
+const mongo_url = `mongodb://${argv.mongo}:27017/twatterdb`;
 mongoose.connect(mongo_url, {useNewUrlParser: true, useUnifiedTopology: true}); 
 
 mongoose.set('useFindAndModify', false);
@@ -66,4 +65,4 @@ app.use(session({
 const routes = require('./api/routes'); 
 routes(app);
 
-app.listen(args[1]);
+app.listen(argv.port);
