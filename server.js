@@ -9,7 +9,7 @@ require('./api/models/item');
 require('./api/models/media');
 
 mongoose.Promise = global.Promise;
-const mongo_url = 'mongodb://192.168.122.16:27017/twatterdb';
+const mongo_url = 'mongodb://192.168.122.32:27017/twatterdb';
 mongoose.connect(mongo_url, {useNewUrlParser: true, useUnifiedTopology: true}); 
 
 mongoose.set('useFindAndModify', false);
