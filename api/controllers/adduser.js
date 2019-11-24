@@ -81,14 +81,10 @@ module.exports = async function(req, res) {
 
     if (code.charAt(0) != 2 ) {
       logger.ERROR('[ADDUSER] ' + JSON.stringify(info, null, 2));
-      // res.status(500).json({status: 'error', error: 'fatal'});
-      // return;
+    } else {
+      logger.INFO('[ADDUSER] email sent to ' + mail_options.to);
     }
-
-    logger.INFO('[ADDUSER] email sent to ' + mail_options.to);
   } catch (err) {
       logger.ERROR('[ADDUSER] ' + err);
-      // res.status(500).json({status: 'error', error: 'fatal'});
-      // return;
   }
 };
