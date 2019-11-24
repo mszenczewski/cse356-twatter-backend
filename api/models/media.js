@@ -4,20 +4,22 @@ const Schema = mongoose.Schema;
 
 const MediaSchema = new Schema({
   id: {
-    type: String,
+    type: String
   },
   by: {
     username: {
-      type: String,
+      type: String
     },
     tweetid: {
-      type: String,
+      type: String
     }
   },
-  content: {
-    contentType: String,
-    data: Buffer
+  path: {
+    type: String
   },
+  filetype: {
+    type: String
+  }
 });
 
 MediaSchema.index( {id: 'text'} );
