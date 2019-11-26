@@ -9,15 +9,11 @@ const User = mongoose.model('Users');
  * USER
  * Retrieves user based on username
  */
-module.exports = function(req, res) {
+module.exports = async function(req, res) {
   logger.DEBUG('[USER] received: ' + JSON.stringify(req.params));
 
-  User.findOne({'username': req.params.username}, function(err, user) {
-    if (err) {
-      logger.ERROR('[USER] ' + err);
-      res.json({status: 'error', error: 'fatal'});
-      return;
-    }
+  try {
+    const user = await User.findOne({'username': req.params.username});
 
     if (user === null) {
       logger.WARN('[USER] user not found');
@@ -38,5 +34,9 @@ module.exports = function(req, res) {
     logger.DEBUG('[FOLLOWING] ' + JSON.stringify(json, null, 2));
 
     res.send(json);
-  });
+
+  } catch (err) {
+    logger.ERROR('[USER] ' + err);
+    res.status(500).json({status: 'error', error: 'fatal'}); 
+  }
 };

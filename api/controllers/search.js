@@ -81,7 +81,7 @@ module.exports = async function(req, res) {
       }
     } catch (err) {
       logger.ERROR('[SEARCH] ' + err);
-      res.json({status: 'error', error: 'fatal'});
+      res.status(500).json({status: 'error', error: 'fatal'});
     }
   }
 
@@ -108,6 +108,6 @@ module.exports = async function(req, res) {
     res.send(json);
   } catch (err) {
     logger.ERROR('[SEARCH] ' + err);
-    res.json({status: 'error', error: 'fatal'});
+    res.status(500).json({status: 'error', error: 'fatal'});
   }
 };

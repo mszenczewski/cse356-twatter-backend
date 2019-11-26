@@ -9,7 +9,7 @@ const Item = mongoose.model('Items');
  * POSTS
  * Retrieves posts based on username
  */
-module.exports = function(req, res) {
+module.exports = async function(req, res) {
   logger.DEBUG('[POSTS] received: ' + JSON.stringify(req.params, null, 2));
   logger.DEBUG('[POSTS] received: ' + JSON.stringify(req.query, null, 2));
 
@@ -22,24 +22,16 @@ module.exports = function(req, res) {
     limit = 200;
   }
 
-  const options = { 'username': req.params.username};
+  try {
+    const results = await Item.find({'username': req.params.username}).limit(parseInt(limit));
+    const items = results.map(item => item.id);
 
-  Item.find(options, function(err, results) {
-      if (err) {
-        logger.ERROR('[POSTS] ' + err);
-        res.json({status: 'error', error: 'fatal'});
-      }
+    logger.INFO('[POSTS] ' + json.items.length + ' results sent');
+    logger.DEBUG('[POSTS] ' + JSON.stringify(json, null, 2));
 
-      var items = results.map(item => item.id);
-
-      let json = {
-        status: 'OK',
-        items: items,
-      };
-
-      logger.INFO('[POSTS] ' + json.items.length + ' results sent');
-      logger.DEBUG('[POSTS] ' + JSON.stringify(json, null, 2));
-
-      res.send(json);
-    }).limit(parseInt(limit));
+    res.send({status: 'OK', items: items});
+  } catch (err) {
+    logger.ERROR('[POSTS] ' + err); 
+    res.status(500).json({status: 'error', error: 'fatal'});
+  }
 };

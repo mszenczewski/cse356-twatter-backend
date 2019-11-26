@@ -9,15 +9,11 @@ const Item = mongoose.model('Items');
  * ITEM
  * Retrieves and item based on ID
  */
-module.exports = function(req, res) {
+module.exports = async function(req, res) {
   logger.DEBUG('[ITEM] received: ' + JSON.stringify(req.params));
 
-  Item.findOne({'id': req.params.id}, function(err, item) {
-    if (err) {
-      logger.ERROR('[ITEM] ' + err);
-      res.status(500).json({status: 'error', error: 'fatal'});
-      return;
-    }
+  try {
+    const item = await Item.findOne({'id': req.params.id});
 
     if (item === null) {
       logger.WARN('[ITEM] item not found');
@@ -41,5 +37,9 @@ module.exports = function(req, res) {
 
     logger.INFO('[ITEM] ' + item.id + ' found');
     res.status(200).send(json);
-  });
+
+  } catch (err) {
+    logger.ERROR('[ITEM] ' + err);
+    res.status(500).json({status: 'error', error: 'fatal'});
+  }
 };
