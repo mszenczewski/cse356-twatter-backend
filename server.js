@@ -21,7 +21,7 @@ if (isNaN(argv.port)) {
 }
 
 if (!argv.mongo || argv.mongo.substring(0,8) != '192.168.') {
-  console.log('**** INCORRECT MONGODB IP ADDRESS ****');
+  console.log('**** INCORRECT MONGO IP ADDRESS ****');
   process.exit(1);  
 } else {
   console.log(`[args] using ${argv.mongo} as mongo server`);
