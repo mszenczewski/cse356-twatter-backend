@@ -20,11 +20,11 @@ if (isNaN(argv.port)) {
   console.log(`[args] listening on port ${argv.port}`);
 }
 
-if (!argv.mongo || argv.mongo.substring(0,8) != '192.168.') {
+if (argv.mongo && (argv.mongo.substring(0,8) == '192.168.' || argv.mongo == 'localhost')) {
+  console.log(`[args] using ${argv.mongo} as mongo server`);
+} else {
   console.log('**** INCORRECT MONGO IP ADDRESS ****');
   process.exit(1);  
-} else {
-  console.log(`[args] using ${argv.mongo} as mongo server`);
 }
 
 if (!argv.mail || argv.mail.substring(0,8) != '192.168.') {
