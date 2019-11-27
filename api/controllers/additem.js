@@ -1,7 +1,6 @@
 'use strict';
 
 const logger = require('../logger');
-
 const mongoose = require('mongoose'),
   Item = mongoose.model('Items'),
   Media = mongoose.model('Media');
@@ -12,7 +11,7 @@ const mongoose = require('mongoose'),
  * JSON: {content: childType: parent: media:} 
  */
 module.exports = async function(req, res) {
-  logger.DEBUG('[ADDITEM] received: ' + JSON.stringify(req.body));
+  logger.DEBUG('[ADDITEM] received: ' + JSON.stringify(req.body, null, 2));
 
   if (!req.session || !req.session.user) {
     logger.WARN('[ADDITEM] user not logged in');
@@ -28,12 +27,15 @@ module.exports = async function(req, res) {
 
   if (req.body.childType === 'retweet') {
     try {
-      await Item.findOneAndUpdate({id: req.body.parent}, {$inc: {retweeted: 1}});
+      const item = await Item.findOneAndUpdate({id: req.body.parent}, {$inc: {retweeted: 1}});
+
       logger.INFO(`[ADDITEM] ${req.body.parent} retweeted by ${req.session.user}`);
+
       res.status(200).json({status: 'OK'});
       return;
     } catch (err) {
       logger.ERROR('[ADDITEM] ' + err);
+      res.status(500).json({status: 'error', error: 'fatal'});
       return;
     }
   }
@@ -55,16 +57,13 @@ module.exports = async function(req, res) {
       }
     } catch (err) {
       logger.ERROR('[ADDITEM] ' + err);
+      res.status(500).json({status: 'error', error: 'fatal'});
       return;
     }
-  }
-
-  const random_key = Math.floor(Math.random() * Math.floor(100000));
-
-  res.status(200).json({status: 'OK', id: random_key});
+  } 
 
   const temp = {
-    id: random_key,
+    id: Math.floor(Math.random() * Math.floor(100000)),
     username: req.session.user,
     property: {likes: 0},
     retweeted: 0,
@@ -83,11 +82,18 @@ module.exports = async function(req, res) {
 
   try {
     const item = await Item.create(temp);
-    await Media.findOneAndUpdate({id: req.body.media}, {'by.tweetid': item.id});
+
+    if (req.body.media) {
+      await Media.findOneAndUpdate({id: req.body.media}, {'by.tweetid': item.id});
+    }
+
     logger.INFO('[ADDITEM] item ' + item.id + ' added');
+
+    res.status(200).json({status: 'OK', id: item.id});
     return;
   } catch (err) {
     logger.ERROR('[ADDITEM] ' + err);
+    res.status(500).json({status: 'error', error: 'fatal'});
     return;
   }  
 };
