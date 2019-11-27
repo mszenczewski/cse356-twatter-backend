@@ -1,7 +1,7 @@
 'use strict';
 
 const logger = require('../logger');
-const rimraf = require('rimraf');
+const memcached = require('../memcached');
 const mongoose = require('mongoose'),
   User = mongoose.model('Users'),
   Item = mongoose.model('Items'),
@@ -16,10 +16,8 @@ module.exports = async function(req, res) {
     await Item.deleteMany({});
     await User.deleteMany({});
     await Media.deleteMany({});
+    memcached.flush(function (err) {if (err) throw err});
     logger.INFO('[RESET] database reset');
-
-    rimraf.sync("./media");
-
     res.json({status: 'OK'});
   } catch (err) {
     logger.ERROR('[RESET]: ' + err);

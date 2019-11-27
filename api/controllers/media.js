@@ -1,7 +1,6 @@
 'use strict';
 
 const logger = require('../logger');
-const fs = require('fs');
 const mongoose = require('mongoose'),
   Media = mongoose.model('Media');
 
@@ -21,21 +20,13 @@ module.exports = async function(req, res) {
       return;
     }
 
-    logger.DEBUG('[MEDIA] found: ' + JSON.stringify(media, null, 2));
-
-    const stat = fs.statSync(media.path);
-
-    res.writeHead(200, {
-      'Content-Type': media.filetype,
-      'Content-Length': stat.size
-    });
-
-    var readStream = fs.createReadStream(media.path);
-    readStream.pipe(res);
-
     logger.INFO('[MEDIA] ' + media.id + ' found');
+
+    res.writeHead(200, {'Content-Type': media.content.contentType});        
+    res.end(media.content.data);
 
   } catch (err) {
     logger.ERROR('[MEDIA] ' + err);
+    res.status(500).json({status: 'error', error: 'fatal'});
   }
 };
