@@ -2,12 +2,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-mongoose.Promise = global.Promise;
-mongoose.connect('mongodb://192.168.122.57:27017/userdb', {useNewUrlParser: true, useUnifiedTopology: true});
-
-mongoose.set('useFindAndModify', false);
-mongoose.set('useCreateIndex', true);
-
 const UserSchema = new Schema({
   username: {
     type: String,

@@ -27,14 +27,29 @@ if (!argv.mail || argv.mail.substring(0,8) != '192.168.') {
   console.log(`[args] using ${argv.mail} as mail server`);
 }
 
+if (!argv.mongo || argv.mongo.substring(0,8) != '192.168.') {
+  console.log('**** INCORRECT MONGO IP ADDRESS ****');
+  process.exit(1);  
+} else {
+  console.log(`[args] using ${argv.mongo} as mongo server`);
+}
+
 const express = require('express');
 const app = express();
 const session = require('client-sessions');
 const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
 
 require('./api/models/item');
 require('./api/models/user');
 require('./api/models/media');
+
+mongoose.Promise = global.Promise;
+const mongo_url = `mongodb://${argv.mongo}:27017/twatterdb`;
+mongoose.connect(mongo_url, {useNewUrlParser: true, useUnifiedTopology: true}); 
+
+mongoose.set('useFindAndModify', false);
+mongoose.set('useCreateIndex', true);
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());

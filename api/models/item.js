@@ -2,12 +2,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-mongoose.Promise = global.Promise;
-mongoose.connect('mongodb://192.168.122.56:27017/itemdb', {useNewUrlParser: true, useUnifiedTopology: true});
-
-mongoose.set('useFindAndModify', false);
-mongoose.set('useCreateIndex', true);
-
 const ItemSchema = new Schema({
   id: {
     type: String
@@ -27,16 +21,13 @@ const ItemSchema = new Schema({
     type: String
   },
   timestamp: {
-    type: Number
+    type: String
   },
   parent: {
     type: String
   },
   media: {
     type: Array
-  },
-  childType: {
-    type: String
   }
 });
 
