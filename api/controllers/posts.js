@@ -27,7 +27,7 @@ module.exports = async function(req, res) {
     const items = results.map(item => item.id);
 
     logger.INFO('[POSTS] ' + items.length + ' results sent');
-    logger.DEBUG('[POSTS] ' + JSON.stringify(json, null, 2));
+    logger.DEBUG('[POSTS] ' + JSON.stringify(items, null, 2));
 
     res.send({status: 'OK', items: items});
   } catch (err) {
