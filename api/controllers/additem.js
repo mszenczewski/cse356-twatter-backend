@@ -42,7 +42,7 @@ module.exports = async function(req, res) {
 
   if (req.body.media) {
     try {
-      const results = await Media.find({id: req.body.media});
+      const results = await Media.find({id: req.body.media}, {by : 1});
       for (var i = 0; i < results.length; i++) {
         if (results[i].by.tweetid !== null) {
           logger.WARN('[ADDITEM] media already has a tweet associated with it');

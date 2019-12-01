@@ -19,7 +19,7 @@ module.exports = async function(req, res) {
   }
 
   try {
-    const item = await Item.findOne({'id': req.params.id});
+    const item = await Item.findOne({'id': req.params.id}, {username : 1, media : 1});
 
     if (item === null) {
       logger.ERROR('[WARN]: item not found');
