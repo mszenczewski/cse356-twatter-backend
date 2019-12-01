@@ -13,9 +13,9 @@ module.exports = async function(req, res) {
   logger.DEBUG('[USER] received: ' + JSON.stringify(req.params));
 
   try {
-    const user = await User.findOne({'username': req.params.username});
+    const u = await User.findOne({'username': req.params.username}, {username : 1, email : 1, followers : 1, following : 1});
 
-    if (user === null) {
+    if (u === null) {
       logger.WARN('[USER] user not found');
       res.status(404).json({status: 'error', error: 'user not found'});
       return;
@@ -24,13 +24,13 @@ module.exports = async function(req, res) {
     const json = {
       status: 'OK',
       user: {
-        email: user.email,
-        followers: user.followers.length,
-        following: user.following.length
+        email: u.email,
+        followers: u.followers.length,
+        following: u.following.length
       }
     }
 
-    logger.INFO('[FOLLOWING] ' + user.username + ' info sent');
+    logger.INFO('[FOLLOWING] ' + u.username + ' info sent');
     logger.DEBUG('[FOLLOWING] ' + JSON.stringify(json, null, 2));
 
     res.send(json);

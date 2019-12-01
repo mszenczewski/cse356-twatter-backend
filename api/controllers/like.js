@@ -27,7 +27,7 @@ module.exports = async function(req, res) {
   }
   
   try {
-    const user = await User.findOne({username: req.session.user});
+    const user = await User.findOne({username: req.session.user}, {username : 1, liked : 1});
 
     if (req.body.like && user.liked.includes(req.params.id)) {
       logger.WARN(`[LIKE] ${req.session.user} has already liked this item`);

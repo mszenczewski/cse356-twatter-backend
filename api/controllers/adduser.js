@@ -51,7 +51,7 @@ module.exports = async function(req, res) {
 
   try {
     //ADD USER
-    const u = await User.findOne({'username': req.body.username});
+    const u = await User.findOne({'username': req.body.username}, {username : 1});
 
     if (u !== null) {
       logger.WARN('[ADDUSER] user already exists');

@@ -26,7 +26,7 @@ module.exports = async function(req, res) {
   }
 
   try {
-    const user = await User.findOne({email: req.body.email});
+    const user = await User.findOne({email: req.body.email}, {verified : 1, key : 1, email : 1});
 
     if(user === null) {
       logger.WARN('[VERIFY] user not found');

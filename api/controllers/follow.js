@@ -32,7 +32,7 @@ module.exports = async function(req, res) {
   }
 
   try {
-    const target = await User.findOne({'username': req.body.username});
+    const target = await User.findOne({'username': req.body.username}, {username : 1, followers : 1});
 
     if (target === null) {
       logger.WARN('[FOLLOW] could not find user');
@@ -52,7 +52,7 @@ module.exports = async function(req, res) {
       return;
     }
 
-    const me = await User.findOne({'username': req.session.user});
+    const me = await User.findOne({'username': req.session.user}, {username : 1, following : 1});
 
     if (req.body.follow) {
       target.followers.push(req.session.user);

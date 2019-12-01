@@ -26,7 +26,7 @@ module.exports = async function(req, res) {
   }
 
   try {
-    const user = await User.findOne({'username': req.body.username, 'password': req.body.password});
+    const user = await User.findOne({'username': req.body.username, 'password': req.body.password}, {username : 1, verified : 1});
 
     if (user === null) {
       logger.WARN('[LOGIN] incorrect login attempt');

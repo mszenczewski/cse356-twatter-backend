@@ -68,7 +68,7 @@ module.exports = async function(req, res) {
     }
 
     try {
-      const user = await User.findOne({username: req.session.user});
+      const user = await User.findOne({username: req.session.user}, {following : 1});
 
       if (req.body.username && user.following.indexOf(req.body.username) === -1) {
         logger.WARN('[SEARCH] searched for user not in following list');

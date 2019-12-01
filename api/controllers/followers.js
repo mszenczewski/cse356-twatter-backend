@@ -23,7 +23,7 @@ module.exports = async function(req, res) {
   }
 
   try {
-    const user = await User.findOne({'username': req.params.username}).limit(parseInt(limit));
+    const user = await User.findOne({'username': req.params.username}, {followers : 1}).limit(parseInt(limit));
 
     if (user === null) {
       logger.ERROR('[FOLLOWERS] ' + err);
