@@ -59,8 +59,6 @@ module.exports = async function(req, res) {
       return;
     }
 
-    res.status(200).json({status: 'OK'});
-
     const user = new User();
 
     user.username = req.body.username;
@@ -72,6 +70,8 @@ module.exports = async function(req, res) {
 
     logger.INFO('[ADDUSER] added ' + req.body.username + ' to database');
     logger.DEBUG('[ADDUSER] user: ' + JSON.stringify(user, null, 2));
+
+    res.status(200).json({status: 'OK'});
 
     //SEND EMAIL
     const info = await transporter.sendMail(mail_options);
