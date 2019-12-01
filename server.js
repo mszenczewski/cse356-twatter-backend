@@ -20,13 +20,6 @@ if (isNaN(argv.port)) {
   console.log(`[args] listening on port ${argv.port}`);
 }
 
-if (argv.mongo && (argv.mongo.substring(0,8) == '192.168.' || argv.mongo == 'localhost')) {
-  console.log(`[args] using ${argv.mongo} as mongo server`);
-} else {
-  console.log('**** INCORRECT MONGO IP ADDRESS ****');
-  process.exit(1);  
-}
-
 if (!argv.mail || argv.mail.substring(0,8) != '192.168.') {
   console.log('**** INCORRECT MAIL IP ADDRESS ****');
   process.exit(1);  
@@ -36,21 +29,12 @@ if (!argv.mail || argv.mail.substring(0,8) != '192.168.') {
 
 const express = require('express');
 const app = express();
-const mongoose = require('mongoose');
 const session = require('client-sessions');
 const bodyParser = require('body-parser');
 
-require('./api/models/user');
 require('./api/models/item');
+require('./api/models/user');
 require('./api/models/media');
-
-mongoose.Promise = global.Promise;
-const mongo_url = `mongodb://${argv.mongo}:27017/twatterdb`;
-mongoose.connect(mongo_url, {useNewUrlParser: true, useUnifiedTopology: true}); 
-
-mongoose.set('useFindAndModify', false);
-mongoose.set('useCreateIndex', true);
-mongoose.set('useNewUrlParser', true);
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
