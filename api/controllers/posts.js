@@ -26,7 +26,7 @@ module.exports = async function(req, res) {
     const results = await Item.find({'username': req.params.username}).limit(parseInt(limit));
     const items = results.map(item => item.id);
 
-    logger.INFO('[POSTS] ' + json.items.length + ' results sent');
+    logger.INFO('[POSTS] ' + items.length + ' results sent');
     logger.DEBUG('[POSTS] ' + JSON.stringify(json, null, 2));
 
     res.send({status: 'OK', items: items});
