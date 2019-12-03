@@ -7,7 +7,8 @@ const ItemSchema = new Schema({
     type: String
   },
   username: {
-    type: String
+    type: String,
+    index: true
   },
   property: {
     likes: {

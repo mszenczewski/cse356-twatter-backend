@@ -5,7 +5,8 @@ const Schema = mongoose.Schema;
 const UserSchema = new Schema({
   username: {
     type: String,
-    required: true
+    required: true,
+    index: true
   },
   password: {
     type: String,
@@ -36,5 +37,7 @@ const UserSchema = new Schema({
     default: [] 
   }
 });
+
+UserSchema.index( {id: 'username'} );
 
 module.exports = mongoose.model('Users', UserSchema);

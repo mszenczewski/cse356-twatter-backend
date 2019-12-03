@@ -5,10 +5,11 @@ const Schema = mongoose.Schema;
 const MediaSchema = new Schema({
   id: {
     type: String,
+    index: true
   },
   by: {
     username: {
-      type: String,
+      type: String
     },
     tweetid: {
       type: String,
