@@ -11,6 +11,7 @@ const mongoose = require('mongoose'),
  * JSON: {content: childType: parent: media:} 
  */
 module.exports = async function(req, res) {
+  logger.DEBUG('     ');
   logger.DEBUG('[ADDITEM] received: ' + JSON.stringify(req.body, null, 2));
 
   if (!req.session || !req.session.user) {
@@ -40,7 +41,10 @@ module.exports = async function(req, res) {
 
   if (req.body.media) {
     try {
-      const results = await Media.find({id: req.body.media}, {by : 1});
+      const results = await Media.find({id: req.body.media}, {by : 1, id : 1});
+      logger.DEBUG('req.session.user: ' + req.session.user);
+      logger.DEBUG('results: ' + JSON.stringify(results,null,2));
+
       for (var i = 0; i < results.length; i++) {
         if (results[i].by.tweetid !== null) {
           logger.WARN('[ADDITEM] media already has a tweet associated with it');
@@ -61,7 +65,7 @@ module.exports = async function(req, res) {
   } 
 
   const temp = {
-    id: Math.floor(Math.random() * Math.floor(100000)),
+    id: Math.floor(Math.random() * Math.floor(100000000000000000)),
     username: req.session.user,
     property: {likes: 0},
     retweeted: 0,
@@ -86,10 +90,9 @@ module.exports = async function(req, res) {
         await Media.findOneAndUpdate({id: req.body.media[i]}, {'by.tweetid': item.id});
       }
     }
-    
-    logger.INFO('[ADDITEM] item ' + item.id + ' added');
 
-    res.status(200).json({status: 'OK', id: item.id});
+    res.status(200).json({status: 'OK', id: temp.id}); 
+    logger.INFO('[ADDITEM] item ' + item.id + ' added');
     return;
   } catch (err) {
     logger.ERROR('[ADDITEM] ' + err);

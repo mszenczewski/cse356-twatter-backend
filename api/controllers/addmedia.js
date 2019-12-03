@@ -28,7 +28,7 @@ module.exports = function(req, res) {
 
     const media = new Media();
 
-    media.id = Math.floor(Math.random() * Math.floor(100000));;
+    media.id = Math.floor(Math.random() * Math.floor(100000000000000000));;
 
     media.content = {
       contentType: files.content.type,
@@ -44,7 +44,7 @@ module.exports = function(req, res) {
 
     try {
       await media.save();
-      fs.unlink(files.content.path);
+      fs.unlinkSync(files.content.path);
       logger.INFO('[ADDMEDIA] media ' + media.id + ' added');
     } catch (err) {
       logger.ERROR('[ADDMEDIA] ' + err); 

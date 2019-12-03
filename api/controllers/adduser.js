@@ -33,7 +33,7 @@ module.exports = async function(req, res) {
     return;
   }
 
-  const random_key = Math.floor(Math.random() * Math.floor(100000));
+  const random_key = Math.floor(Math.random() * Math.floor(100000000000000000));
 
   const mail_options = {
     from: 'no-reply@gaillardia.cse356.compas.cs.stonybrook.edu',

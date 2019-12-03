@@ -40,6 +40,9 @@ const app = express();
 const session = require('client-sessions');
 const bodyParser = require('body-parser');
 
+var mongooseCache = require('mongoose-redis');
+var cache = mongooseCache(mongoose, "redis://localhost:6379"); 
+
 mongoose.Promise = global.Promise;
 
 const mongo_url = `mongodb://${argv.mongo}:27017/twatter-sharded`;
