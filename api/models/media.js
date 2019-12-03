@@ -19,8 +19,8 @@ const MediaSchema = new Schema({
     contentType: String,
     data: Buffer
   },
-});
+}, {shardKey: {id: 1}});
 
-MediaSchema.index( {id: 'text'} );
+// MediaSchema.index( {id: 'text'} );
 
 module.exports = mongoose.model('Media', MediaSchema);

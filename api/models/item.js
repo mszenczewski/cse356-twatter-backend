@@ -30,7 +30,7 @@ const ItemSchema = new Schema({
   media: {
     type: Array
   }
-});
+}, {shardKey: {id: 1}});
 
 ItemSchema.index( { content: 'text' , id: 'text'} );
 

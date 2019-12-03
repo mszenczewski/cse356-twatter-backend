@@ -27,10 +27,8 @@ module.exports = async function(req, res) {
 
   if (req.body.childType === 'retweet') {
     try {
-      const item = await Item.findOneAndUpdate({id: req.body.parent}, {$inc: {retweeted: 1}});
-
+      await Item.findOneAndUpdate({id: req.body.parent}, {$inc: {'retweeted': 1}});
       logger.INFO(`[ADDITEM] ${req.body.parent} retweeted by ${req.session.user}`);
-
       res.status(200).json({status: 'OK'});
       return;
     } catch (err) {
@@ -82,11 +80,13 @@ module.exports = async function(req, res) {
 
   try {
     const item = await Item.create(temp);
-
+    
     if (req.body.media) {
-      await Media.findOneAndUpdate({id: req.body.media}, {'by.tweetid': item.id});
+      for (let i = 0; i < req.body.media.length; i++) {
+        await Media.findOneAndUpdate({id: req.body.media[i]}, {'by.tweetid': item.id});
+      }
     }
-
+    
     logger.INFO('[ADDITEM] item ' + item.id + ' added');
 
     res.status(200).json({status: 'OK', id: item.id});

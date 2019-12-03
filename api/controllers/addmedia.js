@@ -44,6 +44,7 @@ module.exports = function(req, res) {
 
     try {
       await media.save();
+      fs.unlink(files.content.path);
       logger.INFO('[ADDMEDIA] media ' + media.id + ' added');
     } catch (err) {
       logger.ERROR('[ADDMEDIA] ' + err); 

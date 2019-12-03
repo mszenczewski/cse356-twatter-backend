@@ -14,7 +14,8 @@ const UserSchema = new Schema({
   },
   email: {
     type: String,
-    required: true
+    required: true,
+    index: true
   },
   key: {
     type: String,
@@ -36,8 +37,10 @@ const UserSchema = new Schema({
     type: Array,
     default: [] 
   }
-});
+}, {shardKey: {username: 1}});
 
-UserSchema.index( {id: 'username'} );
+// UserSchema.index( {id: 'username'} );
+
+// UserSchema.index( { email: 'text'} );
 
 module.exports = mongoose.model('Users', UserSchema);
